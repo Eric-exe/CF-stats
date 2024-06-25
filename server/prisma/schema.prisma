@@ -25,6 +25,8 @@ model Problem {
     assigns                 CFAssignedProblem[]
     userProblems            UserProblem[]
     submissions             Submission[]
+
+    @@unique([contestId, index])
 }
 
 model User {
@@ -69,7 +71,7 @@ model CFAssignedProblem {
     assignedUsername        String                  @unique
     problem                 Problem                 @relation(fields: [problemId], references: [id])
     problemId               String
-    timeAssigned            DateTime
+    timeAssigned            DateTime                @default(now())
 }
 
 model Post {
