@@ -11,5 +11,8 @@
   "description": "",
   "dependencies": {
     "expres": "^0.0.5"
+  },
+  "devDependencies": {
+    "prisma": "^5.15.1"
   }
 }

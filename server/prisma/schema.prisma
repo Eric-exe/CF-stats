@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Problem {
+    id                  String                  @id
+    contestId           Int
+    index               String
+    name                String?
+    ratings             Int?                     @default(-1)
+    tags                String[]?
+}
+
+model User {
+    username            String                  @id @unique
+    cfHandle?           String
+    cfEstimatedElo      Int                     @default(1000)
+    cfSubmissions       Submission[]
+    cfProblems          UserProblem[]
+    cfAssignedProblem   CFAssignedProblem?
+}
+
+model Submission {
+    id                  Int                     @id @default(autoincrement())
+    author              User                    @relation(fields: [authorUsername], references: [username])
+    authorUsername      String                  @index
+    problem             Problem                 @relation(fields: [problemId], references: [id])
+    problemId           String                  @index
+    timeCreated         DateTime
+    programmingLang     String
+    verdict             String
+    timeUsed            Int
+    memoryUsed          Int
+}
+
+model UserProblem {
+
+}
+
+model CFAssignedProblem {
+    id                  Int                     @id @default(autoincrement())
+    assignedUser        User                    @relation(fields: [assignedUsername], references: [username])
+    assignedUsername    String
+    problem             Problem                 @relation(fields: [problemId], references: [id])
+    problemId           String
+    timeAssigned        DateTime
+}
+
+model Post {
+    id                  Int                     @id @default(autoincrement())
+    author              User                    @relation(fields: [authorUsername], references: [username])
+    authorUsername      String
+}
