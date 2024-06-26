@@ -2,3 +2,4 @@ client/.env
 client/node_modules
 server/.env
 server/node_modules
+server/prisma/migrations

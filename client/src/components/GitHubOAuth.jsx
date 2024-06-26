@@ -20,8 +20,6 @@ function GitHubOAuth(props) {
                 const JWT = await API.createJWT(code).then(response => response.json());
                 props.JWTSetter(JWT["encoded"]);
                 localStorage.setItem("jwt", JWT["encoded"]);
-
-                // redirect to landing page
                 window.location.href = "/";
             }
         }
