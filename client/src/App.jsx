@@ -1,35 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import "./App.css";
+import { useState, useEffect } from "react";
+import GitHubOAuth from "./components/GitHubOAuth";
+import API from './api.js'
 
 function App() {
-  const [count, setCount] = useState(0)
+    const [JWT, setJWT] = useState(null);
+    const [userInfo, setUserInfo] = useState({});
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    // load JWT from local storage if it exists
+    useEffect(() => {
+        const localJWT = localStorage.getItem("jwt");
+        if (localJWT === null) {
+            return;
+        }
+        setJWT(localJWT);
+    }, []);
+
+    // gets user data from JWT. JWT can expire so remove local JWT if it is expired.
+    useEffect(() => {
+        const updateUserInfo = async () => {
+            const data = await API.getUserInfo(JWT).then(response => response.json());
+            if (Object.prototype.hasOwnProperty.call(data, "error")) {
+                localStorage.removeItem("jwt"); // bad JWT, clear jwt from localStorage
+            }
+            else {
+                setUserInfo(data);
+            }
+        }
+
+        if (JWT != null) {
+            updateUserInfo();
+        }
+    }, [JWT]);
+
+    return (
+        <>
+            {
+                JSON.stringify(userInfo) == "{}" ? 
+                <GitHubOAuth JWTSetter={setJWT}/>
+                :
+                <p>{JSON.stringify(userInfo)}</p>
+            }
+        </>
+    );
 }
 
-export default App
+export default App;
