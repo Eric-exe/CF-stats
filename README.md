@@ -3,8 +3,8 @@
 ## Tasks
 ### Week 4
 - [x] Set up project structure
-- [ ] Create Prisma schema and database
-- [ ] Set up API endpoints fetching both user and question stats from Codeforces
+- [x] Create Prisma schema and database
+- [x] Set up API endpoints fetching both user and question stats from Codeforces
 - [x] Implement GitHub OAuth and persistent login
 
 ### Week 5

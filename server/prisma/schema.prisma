@@ -17,16 +17,14 @@ model Problem {
     id                      String                  @id
     contestId               Int
     index                   String
-    name                    String?
-    ratings                 Int?                     @default(-1)
+    name                    String
+    rating                  Int                      @default(-1)
     tags                    String[]
 
     // handles relationships, shouldn't be accessed from this field
     assigns                 CFAssignedProblem[]
     userProblems            UserProblem[]
     submissions             Submission[]
-
-    @@unique([contestId, index])
 }
 
 model User {
@@ -34,11 +32,11 @@ model User {
     cfHandle                String?
     cfEstimatedElo          Int                     @default(1000)
     cfSubmissions           Submission[]
-    cfProblems              UserProblem[]           @default([])
-    cfAssignedProblem       CFAssignedProblem?   
-    cfLastMonthSubmissions  Int[]                   @default([])
-    cfLastMonthAC           Int[]                   @default([])
-    posts                   Post[]                  @default([])
+    cfProblems              UserProblem[]
+    cfAssignedProblem       CFAssignedProblem?
+    cfLastMonthSubmissions  Int[]
+    cfLastMonthAC           Int[]
+    posts                   Post[]
 }
 
 model Submission {

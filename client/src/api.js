@@ -1,5 +1,5 @@
 class API {
-    static async fetchRequest(url, method, body, JWT) {
+    static fetchRequest(url, method, body, JWT) {
         try {
             let fetchInput = {
                 "method": method,
