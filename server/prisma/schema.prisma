@@ -34,11 +34,11 @@ model User {
     cfHandle                String?
     cfEstimatedElo          Int                     @default(1000)
     cfSubmissions           Submission[]
-    cfProblems              UserProblem[]
-    cfAssignedProblem       CFAssignedProblem?
-    cfLastMonthSubmissions  Int[]
-    cfLastMonthAC           Int[]
-    posts                   Post[]
+    cfProblems              UserProblem[]           @default([])
+    cfAssignedProblem       CFAssignedProblem?   
+    cfLastMonthSubmissions  Int[]                   @default([])
+    cfLastMonthAC           Int[]                   @default([])
+    posts                   Post[]                  @default([])
 }
 
 model Submission {

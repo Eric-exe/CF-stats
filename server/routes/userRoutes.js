@@ -34,6 +34,7 @@ router.post("/createJWT", async (req, res) => {
             }
         }).then(response => response.json());
         username = userResponse["login"];
+
     } catch (error) {
         console.error("Error while fetching GitHub username: ", error);
     }
@@ -41,8 +42,21 @@ router.post("/createJWT", async (req, res) => {
     return res.json({"encoded": jwt.sign({"username": username}, process.env.JWT_SECRET_KEY, {expiresIn: "7d"})});
 });
 
-router.get("/info", authenticateJWT, (req, res) => {
-    return res.json({"username": req["user"]["username"]});
+router.get("/info", authenticateJWT, async (req, res) => {
+    let userInfo = await prisma.User.findUnique({
+        "where": {"username": req["user"]["username"]}
+    });
+
+    // first time user has signed up, create a new account
+    if (userInfo === null) {
+        userInfo = await prisma.User.create({
+            "data": {
+                "username": req["user"]["username"],
+            }
+        })
+    }
+
+    return res.json(userInfo);
 })
 
 module.exports = router;
