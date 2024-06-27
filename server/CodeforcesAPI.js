@@ -46,7 +46,8 @@ class CodeforcesAPI {
                     },
                 });
             } catch (error) {
-                console.error("[Update submission error]: ", error); // most likely the problem doesn't exist in problems API
+                // most likely the problem doesn't exist in problems API
+                console.error("[Update submission error]: ", error); 
             }
 
             // Update the user's problem status
@@ -65,7 +66,8 @@ class CodeforcesAPI {
                     });
                 }
             } catch (error) {
-                console.error(error);
+                // most likely the problem doesn't exist in problems API
+                console.error("[Update user problem status error]: ", error);
             }
         }
     }
