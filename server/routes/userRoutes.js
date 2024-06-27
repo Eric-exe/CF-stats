@@ -59,9 +59,15 @@ router.get("/info", authenticateJWT, async (req, res) => {
 });
 
 // TESTING STUFF (IGNORE)
-const CodeForcesAPI = require("../CodeforcesAPI");
+const CodeforcesAPI = require("../CodeforcesAPI");
 router.get("/test", async (req, res) => {
-    CodeForcesAPI.updateProblems();
+    CodeforcesAPI.updateProblems();
+    return;
 });
+
+router.get("/test2", async (req, res) => {
+    CodeforcesAPI.updateUserStats("Eric-exe");
+    return;
+})
 
 module.exports = router;
