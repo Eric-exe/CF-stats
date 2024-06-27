@@ -1,6 +1,6 @@
 import "./App.css";
 import { useState, useEffect } from "react";
-import GitHubOAuth from "./components/GitHubOAuth";
+import NavBar from "./components/NavBar";
 import API from './api.js'
 
 function App() {
@@ -35,12 +35,7 @@ function App() {
 
     return (
         <>
-            {
-                JSON.stringify(userInfo) == "{}" ? 
-                <GitHubOAuth JWTSetter={setJWT}/>
-                :
-                <p>{JSON.stringify(userInfo)}</p>
-            }
+            <NavBar JWTSetter={setJWT} userInfo={userInfo}/>
         </>
     );
 }

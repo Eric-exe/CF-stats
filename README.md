@@ -9,7 +9,7 @@
 
 ### Week 5
 - [ ] Create basic profile page UI
-- [ ] Process the questions from Codeforces
+- [x] Process the questions from Codeforces
 - [ ] Create linking method to link user account to website
 - [ ] Create submission stats (attempts, AC, percentages)
 

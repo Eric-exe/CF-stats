@@ -27,7 +27,10 @@ function GitHubOAuth(props) {
     }, []);
 
     return (
-        <button onClick={handleLogin}>Login with GitHub</button>
+        <div className="btn btn-sm btn-outline-light" onClick={handleLogin}>
+            Login with GitHub
+            <i className="bi bi-github ms-1"></i>
+        </div>
     )
 }
 
