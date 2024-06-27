@@ -1,4 +1,6 @@
-import GitHubOAuth from "./GitHubOAuth";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import GitHubOAuth from "./GitHubOAuth.jsx";
 import propTypes from "prop-types";
 
 NavBar.propTypes = {
@@ -6,6 +8,15 @@ NavBar.propTypes = {
     userInfo: propTypes.object.isRequired,
 };
 function NavBar(props) {
+    const [currentPage, setCurrentPage] = useState("/");
+
+    const handleNavLinkClick = (page) => {
+        setCurrentPage(page);
+        navigate(page);
+    };
+
+    const navigate = useNavigate();
+
     return (
         <div className="navbar navbar-expand-lg sticky-top navbar-dark bg-dark shadow-lg">
             <div className="container-fluid">
@@ -21,32 +32,41 @@ function NavBar(props) {
                 <div className="collapse navbar-collapse" id="navbar">
                     <div className="navbar-nav me-auto">
                         <div className="nav-item">
-                            <a className="nav-link active" href="#">
+                            <div className={"nav-link " + (currentPage === "/" ? "active" : "")} onClick={() => handleNavLinkClick("/")}>
                                 Home
-                            </a>
+                            </div>
                         </div>
 
                         <div className="nav-item">
-                            <a className="nav-link" href="#">
+                            <div
+                                className={"nav-link " + (currentPage === "/problems" ? "active" : "")}
+                                onClick={() => handleNavLinkClick("/problems")}
+                            >
                                 Problems
-                            </a>
+                            </div>
                         </div>
 
                         <div className="nav-item">
-                            <a className="nav-link" href="#">
+                            <div
+                                className={"nav-link " + (currentPage === "/resources" ? "active" : "")}
+                                onClick={() => handleNavLinkClick("/resources")}
+                            >
                                 Resources
-                            </a>
+                            </div>
                         </div>
                     </div>
 
                     <div className="navbar-nav nav-item">
-                        <a className="nav-link" href="#">
+                        <div
+                            className={"nav-link " + (currentPage.substring(0, 8) === "/profile" ? "active" : "")}
+                            onClick={() => handleNavLinkClick(`/profile/${props.userInfo.username}`)}
+                        >
                             {JSON.stringify(props.userInfo) === "{}" ? (
                                 <GitHubOAuth JWTSetter={props.JWTSetter} />
                             ) : (
                                 <>{props.userInfo.username}</>
                             )}
-                        </a>
+                        </div>
                     </div>
                 </div>
             </div>

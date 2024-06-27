@@ -1,7 +1,12 @@
 import "./App.css";
 import { useState, useEffect } from "react";
-import NavBar from "./components/NavBar";
-import API from './api.js'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import NavBar from "./components/NavBar.jsx";
+import API from "./api.js";
+import HomePage from "./pages/HomePage/HomePage.jsx";
+import ProblemsPage from "./pages/ProblemsPage/ProblemsPage.jsx";
+import ResourcesPage from "./pages/ResourcesPage/ResourcesPage.jsx";
+import ProfilePage from "./pages/ProfilePage/ProfilePage.jsx";
 
 function App() {
     const [JWT, setJWT] = useState(null);
@@ -35,7 +40,15 @@ function App() {
 
     return (
         <>
-            <NavBar JWTSetter={setJWT} userInfo={userInfo}/>
+            <Router>
+                <NavBar JWTSetter={setJWT} userInfo={userInfo}/>
+                <Routes>
+                    <Route index element={<HomePage/>}/>
+                    <Route path="problems" element={<ProblemsPage/>}/>
+                    <Route path="resources" element={<ResourcesPage/>}/>
+                    <Route path="profile/:username" element={<ProfilePage/>}/>
+                </Routes>
+            </Router>
         </>
     );
 }
