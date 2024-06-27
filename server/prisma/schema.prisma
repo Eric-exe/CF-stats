@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Problem {
+    id                      String                  @id @unique
+    contestId               Int
+    index                   String
+    name                    String
+    rating                  Int                      @default(-1)
+    tags                    String[]
+
+    // handles relationships, shouldn't be accessed from this field
+    assigned                User[]
+    userProblems            UserProblemStatus[]
+    submissions             Submission[]
+}
+
+model User {
+    username                String                  @id @unique
+    handle                  String?                 @unique
+    estimatedElo            Int                     @default(1000)
+    submissions             Submission[]
+    problems                UserProblemStatus[]
+    assignedProblem         Problem?                @relation(fields: [assignedProblemId], references: [id])
+    assignedProblemId       String?
+    lastMonthSubmissions    Int[]
+    lastMonthAC             Int[]
+    posts                   Post[]
+}
+
+model Submission {
+    id                      Int                     @id 
+    author                  User                    @relation(fields: [authorHandle], references: [handle])
+    authorHandle            String                  
+    problem                 Problem                 @relation(fields: [problemId], references: [id])
+    problemId               String                  
+    timeCreated             DateTime
+    programmingLang         String
+    verdict                 String
+    timeUsed                Int
+    memoryUsed              Int
+}
+
+model UserProblemStatus {
+    id                      Int                     @id @default(autoincrement())
+    user                    User                    @relation(fields: [username], references: [username])
+    username                String                  
+    problem                 Problem                 @relation(fields: [problemId], references: [id])
+    problemId               String
+    solved                  Boolean
+
+    @@unique([username, problemId])
+}
+
+model Post {
+    id                      Int                     @id @default(autoincrement())
+    author                  User                    @relation(fields: [authorUsername], references: [username])
+    authorUsername          String
+
+    @@index([authorUsername])
+}
