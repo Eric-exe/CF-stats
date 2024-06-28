@@ -2,10 +2,10 @@ class API {
     static fetchRequest(url, method, body, JWT) {
         try {
             let fetchInput = {
-                "method": method,
-                "headers": {
+                method: method,
+                headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + JWT
+                    Authorization: "Bearer " + JWT,
                 },
             };
 
@@ -14,31 +14,21 @@ class API {
             }
 
             return fetch(url, fetchInput);
-        }
-        catch (error) {
+        } catch (error) {
             console.error(error);
         }
     }
 
     static createJWT(code) {
-        return this.fetchRequest(
-            import.meta.env.VITE_DB_URL + "/user/createJWT",
-            "POST",
-            JSON.stringify({ code }),
-            () => {},
-            false
-        )
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/createJWT", "POST", JSON.stringify({ code }), "");
     }
 
-    static getUserInfo(userInfoSetter, JWT) {
-        return this.fetchRequest(
-            import.meta.env.VITE_DB_URL + "/user/info",
-            "GET",
-            "",
-            userInfoSetter,
-            false,
-            JWT
-        )
+    static getPrivateUserInfo(JWT) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/privateInfo", "GET", "", JWT);
+    }
+
+    static getPublicUserInfo(username) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/publicInfo", "POST", JSON.stringify({ username }), "");
     }
 }
 
