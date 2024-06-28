@@ -41,19 +41,22 @@ router.post("/createJWT", async (req, res) => {
     return res.json({ encoded: jwt.sign({ username }, process.env.JWT_SECRET_KEY, { expiresIn: "7d" }) });
 });
 
-router.get("/info", authenticateJWT, async (req, res) => {
-    let userInfo = await prisma.User.findUnique({
+// private info forces a creation if user doesnt exist
+router.get("/privateInfo", authenticateJWT, async (req, res) => {
+    let userInfo = await prisma.User.upsert({
         where: { username: req.user.username },
+        create: { username: req.user.username },
+        update: {},
     });
 
-    // first time user has signed up, create a new account
-    if (userInfo === null) {
-        userInfo = await prisma.User.create({
-            data: {
-                username: req.user.username,
-            },
-        });
-    }
+    return res.json(userInfo);
+});
+
+router.post("/publicInfo", async (req, res) => {
+    let username = req.body.username || "";
+    let userInfo = await prisma.User.findUnique({
+        where: { username }
+    });
 
     return res.json(userInfo);
 });
