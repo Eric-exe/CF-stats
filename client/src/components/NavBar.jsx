@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import GitHubOAuth from "./GitHubOAuth.jsx";
 import propTypes from "prop-types";
@@ -10,6 +10,22 @@ NavBar.propTypes = {
 function NavBar(props) {
     const [currentPage, setCurrentPage] = useState("/");
 
+    // handles navbar update in case user uses browser search instead of nav bar
+    useEffect(() => {
+        if (window.location.href.includes("/problems")) {
+            setCurrentPage("/problems");
+        }
+        else if (window.location.href.includes("/resources")) {
+            setCurrentPage("/resources");
+        }
+        else if (window.location.href.match("^profile\\/[a-zA-Z0-9-]+$")) {
+            setCurrentPage("/profile")
+        }
+        else {
+            setCurrentPage("/");
+        }
+    }, []);
+
     const handleNavLinkClick = (page) => {
         setCurrentPage(page);
         navigate(page);
@@ -18,7 +34,7 @@ function NavBar(props) {
     const navigate = useNavigate();
 
     return (
-        <div className="navbar navbar-expand-lg sticky-top navbar-dark bg-dark shadow-lg">
+        <div className="navbar navbar-expand-lg sticky-top navbar-dark bg-dark shadow">
             <div className="container-fluid">
                 <div className="navbar-brand">
                     <i className="bi bi-code-slash mx-2"></i>
@@ -59,7 +75,11 @@ function NavBar(props) {
                     <div className="navbar-nav nav-item">
                         <div
                             className={"nav-link " + (currentPage.substring(0, 8) === "/profile" ? "active" : "")}
-                            onClick={() => handleNavLinkClick(`/profile/${props.userInfo.username}`)}
+                            onClick={() => {
+                                if (JSON.stringify(props.userInfo) !== "{}") {
+                                    handleNavLinkClick(`/profile/${props.userInfo.username}`);
+                                }
+                            }}
                         >
                             {JSON.stringify(props.userInfo) === "{}" ? (
                                 <GitHubOAuth JWTSetter={props.JWTSetter} />
