@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import propTypes from "prop-types";
 import API from "../../api";
+import QuestionStatsCard from "./components/QuestionStatsCard";
+import ActivityGraphStatsCard from "./components/ActivityGraphStatsCard";
+import SubmissionsStatsCard from "./components/SubmissionsStatsCard";
 
 ProfilePage.propTypes = {
     userInfo: propTypes.object.isRequired,
@@ -12,8 +15,8 @@ function ProfilePage(props) {
     const [mode, setMode] = useState("viewer");
     const [profileInfo, setProfileInfo] = useState({});
 
+    // update modes when username is updated
     useEffect(() => {
-        // update modes when username is updated
         if (props.userInfo.username === profileUsername) {
             setMode("owner");
             setProfileInfo(props.userInfo); // user info stores all private info
@@ -52,54 +55,30 @@ function ProfilePage(props) {
                     </div>
                 </div>
 
-                {/* Questions stats */}
-                <div className="card shadow m-4">
-                    <div className="card-header" data-bs-toggle="collapse" data-bs-target="#problem-stats-body" role="button">
-                        <b>Problem Stats</b>
-                    </div>
-                    <div className="collapse show" id="problem-stats-body">
-                        <div className="container-fluid">
-                            <div className="card-body">
-                                <div className="row">
-                                    <div className="col-md-4">
-                                        Problems attempted:&nbsp; {-1} <br />
-                                        Problems solved:&nbsp; {-1} <br />
-                                        Submissions:&nbsp; {-1} <br />
-                                        <hr />
-                                        Most common topics:
-                                    </div>
+                <QuestionStatsCard/>
 
-                                    <div className="col-md-4">Your Problems:</div>
-
-                                    <div className="col-md-4">Problems in your Elo Range:</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Activity stats */}
                 <div className="m-4">
                     <div className="row">
                         <div className="col-6">
-                            <div className="card shadow">
-                                <div className="card-header">
-                                    <b>Submissions Activity</b>
-                                </div>
-                            </div>
+                            <ActivityGraphStatsCard
+                                title="Submissions Activity"
+                                id="submisisons-activity-card"
+                            />
                         </div>
 
                         <div className="col-6">
-                            <div className="card shadow">
-                                <div className="card-header">
-                                    <b>Problems AC'ed Activity</b>
-                                </div>
-                            </div>
+                            <ActivityGraphStatsCard
+                                title="Problems Solved Activity"
+                                id="problems-solved-activity-card"
+                            />
                         </div>
                     </div>
                 </div>
+
+                <SubmissionsStatsCard/>
             </div>
             {/* Debugging stuff */}
+            DEBUGGING <br />
             This is the profile page of {profileUsername}. <br />
             You are: {mode}
             <br />
