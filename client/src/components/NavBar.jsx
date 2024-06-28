@@ -12,13 +12,13 @@ function NavBar(props) {
 
     // handles navbar update in case user uses browser search instead of nav bar
     useEffect(() => {
-        if (window.location.href.includes("/problems")) {
+        if (window.location.href.match("https?:\\/[^\\s]+\\/problems")) { // match with http(s)://.../problem
             setCurrentPage("/problems");
         }
-        else if (window.location.href.includes("/resources")) {
+        else if (window.location.href.match("https?:\\/\\/[^\\s]+\\/resources")) { // match with http(s)://.../resources
             setCurrentPage("/resources");
         }
-        else if (window.location.href.match("^profile\\/[a-zA-Z0-9-]+$")) {
+        else if (window.location.href.match("https?:\\/\\/[^\\s]+\\/profile\\/[a-zA-Z0-9-]+")) { // match with http(s)://.../profile/x
             setCurrentPage("/profile")
         }
         else {
