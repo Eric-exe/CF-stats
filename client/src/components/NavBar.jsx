@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import GitHubOAuth from "./GitHubOAuth.jsx";
 import propTypes from "prop-types";
 
 NavBar.propTypes = {
-    JWTSetter: propTypes.func.isRequired,
     userInfo: propTypes.object.isRequired,
 };
 function NavBar(props) {
@@ -12,26 +10,33 @@ function NavBar(props) {
 
     // handles navbar update in case user uses browser search instead of nav bar
     useEffect(() => {
-        if (window.location.href.match("https?:\\/[^\\s]+\\/problems")) { // match with http(s)://.../problem
+        if (window.location.href.match("https?:\\/[^\\s]+\\/problems")) {
+            // match with http(s)://.../problem
             setCurrentPage("/problems");
-        }
-        else if (window.location.href.match("https?:\\/\\/[^\\s]+\\/resources")) { // match with http(s)://.../resources
+        } else if (window.location.href.match("https?:\\/\\/[^\\s]+\\/resources")) {
+            // match with http(s)://.../resources
             setCurrentPage("/resources");
-        }
-        else if (window.location.href.match("https?:\\/\\/[^\\s]+\\/profile\\/[a-zA-Z0-9-]+")) { // match with http(s)://.../profile/x
-            setCurrentPage("/profile")
-        }
-        else {
+        } else if (window.location.href.match("https?:\\/\\/[^\\s]+\\/profile\\/[a-zA-Z0-9-]+")) {
+            // match with http(s)://.../profile/x
+            setCurrentPage("/profile");
+        } else {
             setCurrentPage("/");
         }
     }, []);
+
+    const navigate = useNavigate();
 
     const handleNavLinkClick = (page) => {
         setCurrentPage(page);
         navigate(page);
     };
 
-    const navigate = useNavigate();
+    // handle github oauth login
+    const handleLogin = () => {
+        window.location.href = `https://github.com/login/oauth/authorize?client_id=${import.meta.env.VITE_GITHUB_CLIENT_ID}&redirect_uri=${
+            import.meta.env.VITE_GITHUB_CALLBACK_URL
+        }`;
+    };
 
     return (
         <div className="navbar navbar-expand-lg sticky-top navbar-dark bg-dark shadow">
@@ -82,7 +87,10 @@ function NavBar(props) {
                             }}
                         >
                             {JSON.stringify(props.userInfo) === "{}" ? (
-                                <GitHubOAuth JWTSetter={props.JWTSetter} />
+                                <div className="btn btn-sm btn-outline-light" onClick={handleLogin}>
+                                    Login with GitHub
+                                    <i className="bi bi-github ms-1"></i>
+                                </div>
                             ) : (
                                 <>{props.userInfo.username}</>
                             )}

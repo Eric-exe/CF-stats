@@ -7,6 +7,7 @@ import HomePage from "./pages/HomePage/HomePage.jsx";
 import ProblemsPage from "./pages/ProblemsPage/ProblemsPage.jsx";
 import ResourcesPage from "./pages/ResourcesPage/ResourcesPage.jsx";
 import ProfilePage from "./pages/ProfilePage/ProfilePage.jsx";
+import GitHubOAuthCallbackPage from "./pages/GitHubOAuthCallbackPage/GitHubOAuthCallbackPage.jsx"
 
 function App() {
     const [JWT, setJWT] = useState(null);
@@ -41,12 +42,13 @@ function App() {
     return (
         <>
             <Router>
-                <NavBar JWTSetter={setJWT} userInfo={userInfo}/>
+                <NavBar userInfo={userInfo}/>
                 <Routes>
                     <Route index element={<HomePage/>}/>
                     <Route path="problems" element={<ProblemsPage/>}/>
                     <Route path="resources" element={<ResourcesPage/>}/>
                     <Route path="profile/:profileUsername" element={<ProfilePage userInfo={userInfo}/>}/>
+                    <Route path="auth/github/callback" element={<GitHubOAuthCallbackPage JWTSetter={setJWT}/>}/>
                 </Routes>
             </Router>
         </>
