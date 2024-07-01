@@ -14,7 +14,8 @@ ProfilePage.propTypes = {
 function ProfilePage(props) {
     const { profileUsername } = useParams();
     const [mode, setMode] = useState("viewer");
-    const [profileInfo, setProfileInfo] = useState({});
+    const [profileInfo, setProfileInfo] = useState(null);
+    const [statusMsg, setStatusMsg] = useState("Loading...");
 
     // update modes when username is updated
     useEffect(() => {
@@ -25,16 +26,18 @@ function ProfilePage(props) {
             } else {
                 setMode("viewer");
                 setProfileInfo(await API.getPublicUserInfo(profileUsername).then(response => response.json()));
+                setStatusMsg("No user found"); // will only show if profile info is null
             }
             setMode(props.userInfo.username === profileUsername ? "owner" : "viewer");
+            console.log(profileInfo);
         }
         updateProfileInfo();
     }, [props.userInfo.username, profileUsername]);
 
     return (
         <>
-            {JSON.stringify(profileInfo) === "{}" ? (
-                <p>No user found</p>
+            {profileInfo === null ? (
+                <p>{statusMsg}</p>
             ) : (
                 <div className="profile-page row justify-content-center container-fluid">
                     <div className="col-12">

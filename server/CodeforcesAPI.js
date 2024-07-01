@@ -59,10 +59,11 @@ class CodeforcesAPI {
                     update: {},
                 });
 
-                // update submissions and AC count and whether the problem has been solved
+                // populate the status with relevant content
                 const data = {
                     submissions: { increment: 1 },
                     AC: { increment: (submission.verdict === "OK" ? 1 : 0) },
+                    user: { update: { lastUpdated: new Date() } }
                 };
                 if (submission.verdict === "OK") {
                     data.solved = true;
