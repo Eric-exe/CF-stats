@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import propTypes from "prop-types";
 import API from "../../api";
+import SuggestedProblemCard from "./components/SuggestedProblemCard";
 import QuestionStatsCard from "./components/QuestionStatsCard";
 import ActivityGraphStatsCard from "./components/ActivityGraphStatsCard";
 import SubmissionsStatsCard from "./components/SubmissionsStatsCard";
@@ -54,6 +55,8 @@ function ProfilePage(props) {
                         </div>
                     </div>
                 </div>
+
+                <SuggestedProblemCard/>
 
                 <QuestionStatsCard/>
 
