@@ -5,6 +5,11 @@ const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
 const authenticateJWT = require("./authenticateJWT");
 
+const USER_INCLUDES = {
+    problems: true, 
+    submissions: { include: { problem: true } },
+};
+
 // takes in GitHub code from OAuth and generates a JWT based on github username
 router.post("/createJWT", async (req, res) => {
     const { code } = req.body;
@@ -47,8 +52,8 @@ router.get("/personalInfo", authenticateJWT, async (req, res) => {
         where: { username: req.user.username },
         create: { username: req.user.username },
         update: {},
+        include: USER_INCLUDES,
     });
-
     userInfo["state"] = "personal";
     return res.json(userInfo);
 });
@@ -56,9 +61,9 @@ router.get("/personalInfo", authenticateJWT, async (req, res) => {
 router.post("/publicInfo", async (req, res) => {
     let username = req.body.username || "";
     let userInfo = await prisma.User.findUnique({
-        where: { username }
+        where: { username },
+        include: USER_INCLUDES
     });
-
     if (userInfo !== null) {
         userInfo["state"] = "public";
     }
@@ -69,12 +74,12 @@ router.post("/publicInfo", async (req, res) => {
 const CodeforcesAPI = require("../CodeforcesAPI");
 router.get("/test", async (req, res) => {
     CodeforcesAPI.updateProblems();
-    return;
+    return res.json({});
 });
 
 router.get("/test2", async (req, res) => {
     CodeforcesAPI.updateUserStats("Eric-exe");
-    return;
+    return res.json({});
 })
 
 module.exports = router;

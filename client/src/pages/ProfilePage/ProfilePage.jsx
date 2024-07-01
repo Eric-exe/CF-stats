@@ -18,14 +18,17 @@ function ProfilePage(props) {
 
     // update modes when username is updated
     useEffect(() => {
-        if (props.userInfo.username === profileUsername) {
-            setMode("owner");
-            setProfileInfo(props.userInfo); // user info stores all private info
-        } else {
-            setMode("viewer");
-            setProfileInfo(API.getPublicUserInfo(profileUsername));
+        const updateProfileInfo = async () => {
+            if (props.userInfo.username === profileUsername) {
+                setMode("owner");
+                setProfileInfo(props.userInfo); // user info stores all private info
+            } else {
+                setMode("viewer");
+                setProfileInfo(await API.getPublicUserInfo(profileUsername).then(response => response.json()));
+            }
+            setMode(props.userInfo.username === profileUsername ? "owner" : "viewer");
         }
-        setMode(props.userInfo.username === profileUsername ? "owner" : "viewer");
+        updateProfileInfo();
     }, [props.userInfo.username, profileUsername]);
 
     return (
@@ -39,17 +42,17 @@ function ProfilePage(props) {
                         <div className="card card-body shadow m-4">
                             <div className="row">
                                 <div className="d-flex col-md-3 my-auto">
-                                    <b>Username:&nbsp;</b> {profileInfo.username}
+                                    <b>Username:&nbsp;</b>{profileInfo.username}
                                 </div>
                                 <div className="d-flex col-md-3 my-auto">
-                                    <b>Codeforces Handle:&nbsp;</b> {profileInfo.handle}
+                                    <b>Codeforces Handle:&nbsp;</b>{profileInfo.handle}
                                 </div>
                                 <div className="d-flex col-md-3 my-auto">
-                                    <b>Estimated Elo:&nbsp;</b> {profileInfo.estimatedElo}
+                                    <b>Estimated Elo:&nbsp;</b>{profileInfo.estimatedElo}
                                 </div>
                                 <div className="d-flex col-md-3 justify-content-between">
                                     <div className="my-auto">
-                                        <b>Last updated:&nbsp;</b> {-1}
+                                        <b>Last updated:&nbsp;</b>{new Date(profileInfo.lastUpdated).toLocaleString()}
                                     </div>
                                     <div className="my-auto">
                                         <button className="btn btn-sm btn-outline-dark">
@@ -76,16 +79,8 @@ function ProfilePage(props) {
                             </div>
                         </div>
 
-                        <SubmissionsStatsCard />
+                        <SubmissionsStatsCard submissionsInfo={profileInfo.submissions}/>
                     </div>
-                    {/* Debugging stuff */}
-                    DEBUGGING <br />
-                    This is the profile page of {profileUsername}. <br />
-                    You are: {mode}
-                    <br />
-                    {JSON.stringify(props.userInfo)}
-                    <br />
-                    {JSON.stringify(profileInfo)}
                 </div>
             )}
         </>

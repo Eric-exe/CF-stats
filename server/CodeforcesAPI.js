@@ -31,7 +31,7 @@ class CodeforcesAPI {
 
             const problemId = `${submission.problem.contestId}-${submission.problem.index}`;
 
-            // Update the newest submissions
+            // create the newest submissions
             try {
                 await prisma.Submission.create({
                     data: {
@@ -53,18 +53,26 @@ class CodeforcesAPI {
             // Update the user's problem status
             try {
                 // create a status if it doesn't exist
-                await prisma.userProblemStatus.upsert({
+                await prisma.UserProblemStatus.upsert({
                     where: { username_problemId: { username, problemId } },
                     create: { solved: false, user: { connect: { username } }, problem: { connect: { id: problemId } } },
                     update: {},
                 });
 
-                if (submission.verdict == "OK") {
-                    await prisma.userProblemStatus.update({
-                        where: { username_problemId: { username, problemId } },
-                        data: { solved: true },
-                    });
+                // update submissions and AC count and whether the problem has been solved
+                const data = {
+                    submissions: { increment: 1 },
+                    AC: { increment: (submission.verdict === "OK" ? 1 : 0) },
+                };
+                if (submission.verdict === "OK") {
+                    data.solved = true;
                 }
+
+                await prisma.UserProblemStatus.update({
+                    where: { username_problemId: { username, problemId }},
+                    data
+                });
+
             } catch (error) {
                 // most likely the problem doesn't exist in problems API
                 console.error("[Update user problem status error]: ", error);

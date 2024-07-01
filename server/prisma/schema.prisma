@@ -35,9 +35,10 @@ model User {
     problems                UserProblemStatus[]
     assignedProblem         Problem?                @relation(fields: [assignedProblemId], references: [id])
     assignedProblemId       String?
-    lastMonthSubmissions    Int[]
-    lastMonthAC             Int[]
+    recentSubmissions       Int[]
+    recentAC                Int[]
     posts                   Post[]
+    lastUpdated             DateTime                @updatedAt
 }
 
 model Submission {
@@ -60,6 +61,8 @@ model UserProblemStatus {
     problem                 Problem                 @relation(fields: [problemId], references: [id])
     problemId               String
     solved                  Boolean
+    submissions             Int                     @default(0)
+    AC                      Int                     @default(0)
 
     @@unique([username, problemId])
 }
