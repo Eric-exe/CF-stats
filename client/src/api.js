@@ -23,8 +23,8 @@ class API {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/createJWT", "POST", JSON.stringify({ code }), "");
     }
 
-    static getPrivateUserInfo(JWT) {
-        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/privateInfo", "GET", "", JWT);
+    static getPersonalUserInfo(JWT) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/personalInfo", "GET", "", JWT);
     }
 
     static getPublicUserInfo(username) {

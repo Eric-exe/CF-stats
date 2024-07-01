@@ -24,7 +24,7 @@ function App() {
     // gets user data from JWT. JWT can expire so remove local JWT if it is expired.
     useEffect(() => {
         const updateUserInfo = async () => {
-            const data = await API.getPrivateUserInfo(JWT).then(response => response.json());
+            const data = await API.getPersonalUserInfo(JWT).then(response => response.json());
             if (Object.prototype.hasOwnProperty.call(data, "error")) {
                 localStorage.removeItem("jwt"); // bad JWT, clear jwt from localStorage
             }

@@ -41,14 +41,15 @@ router.post("/createJWT", async (req, res) => {
     return res.json({ encoded: jwt.sign({ username }, process.env.JWT_SECRET_KEY, { expiresIn: "7d" }) });
 });
 
-// private info forces a creation if user doesnt exist
-router.get("/privateInfo", authenticateJWT, async (req, res) => {
+// personal info forces an entry to be created if entry doesn't exist.
+router.get("/personalInfo", authenticateJWT, async (req, res) => {
     let userInfo = await prisma.User.upsert({
         where: { username: req.user.username },
         create: { username: req.user.username },
         update: {},
     });
 
+    userInfo["state"] = "personal";
     return res.json(userInfo);
 });
 
@@ -58,6 +59,9 @@ router.post("/publicInfo", async (req, res) => {
         where: { username }
     });
 
+    if (userInfo !== null) {
+        userInfo["state"] = "public";
+    }
     return res.json(userInfo);
 });
 
