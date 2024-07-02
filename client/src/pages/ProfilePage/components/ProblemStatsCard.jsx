@@ -1,8 +1,8 @@
 import propTypes from "prop-types";
 
 ProblemStatsCard.propTypes = {
-    profileInfo: propTypes.object.isRequired, 
-}
+    profileInfo: propTypes.object.isRequired,
+};
 
 function ProblemStatsCard(props) {
     // handle common tags
@@ -21,9 +21,11 @@ function ProblemStatsCard(props) {
                             <div className="col-md-4">
                                 <div>Problems attempted:&nbsp;{props.profileInfo.problems.length}</div>
                                 <div>Problems AC:&nbsp;{props.profileInfo.problemsAC}</div>
-                                <div>Submissions (AC/total):&nbsp;
+                                <div>
+                                    Submissions (AC/total):&nbsp;
                                     {props.profileInfo.totalAC + "/" + props.profileInfo.totalSubmissions}
-                                    &nbsp;({Math.round(props.profileInfo.totalAC / props.profileInfo.totalSubmissions * 100 * 100) / 100}%)
+                                    &nbsp;({Math.round((props.profileInfo.totalAC / props.profileInfo.totalSubmissions) * 100 * 100) / 100}
+                                    %)
                                 </div>
                                 <hr />
                                 Most common topics practiced:
@@ -32,8 +34,20 @@ function ProblemStatsCard(props) {
                                     for (let i = 0; i < Math.min(tags.length, 5); i++) {
                                         rows.push(
                                             <div key={i} className="row">
-                                                <div className="col-6 text-truncate">{tags[i]}:&nbsp;{props.profileInfo.problemTags[tags[i]]}</div>
-                                                <div className="col-6 text-truncate">{i + 5 < tags.length ? tags[i + 5] + ": " + String(props.profileInfo.problemTags[tags[i + 5]]) : ""}</div>
+                                                <div className="col-6 text-truncate">
+                                                    <span className="badge rounded-pill bg-secondary">{tags[i]}</span>
+                                                    &nbsp;{props.profileInfo.problemTags[tags[i]]}
+                                                </div>
+                                                <div className="col-6 text-truncate">
+                                                    {i + 5 < tags.length ? (
+                                                        <>
+                                                            <span className="badge rounded-pill bg-secondary">{tags[i + 5]}</span>
+                                                            &nbsp;{props.profileInfo.problemTags[tags[i + 5]]}
+                                                        </>
+                                                    ) : (
+                                                        ""
+                                                    )}
+                                                </div>
                                             </div>
                                         );
                                     }
