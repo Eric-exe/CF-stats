@@ -55,6 +55,7 @@ router.get("/personalInfo", authenticateJWT, async (req, res) => {
         include: USER_INCLUDES,
     });
     userInfo["state"] = "personal";
+
     return res.json(userInfo);
 });
 

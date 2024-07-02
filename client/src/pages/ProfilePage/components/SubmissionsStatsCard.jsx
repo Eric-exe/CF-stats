@@ -1,7 +1,7 @@
 import propTypes from "prop-types";
 
 SubmissionsStatsCard.propTypes = {
-    submissionsInfo: propTypes.array.isRequired,
+    profileInfo: propTypes.object.isRequired,
 };
 
 function SubmissionsStatsCard(props) {
@@ -27,7 +27,7 @@ function SubmissionsStatsCard(props) {
                                 </thead>
 
                                 <tbody className="table-group-divider">
-                                    {props.submissionsInfo.map((submission, index) => (
+                                    {props.profileInfo.submissions.map((submission, index) => (
                                         <tr key={index}>
                                             <td>
                                                 <a

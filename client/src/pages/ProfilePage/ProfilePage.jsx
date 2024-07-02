@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import propTypes from "prop-types";
 import API from "../../api";
 import SuggestedProblemCard from "./components/SuggestedProblemCard";
-import QuestionStatsCard from "./components/QuestionStatsCard";
+import ProblemStatsCard from "./components/ProblemStatsCard";
 import ActivityGraphStatsCard from "./components/ActivityGraphStatsCard";
 import SubmissionsStatsCard from "./components/SubmissionsStatsCard";
 
@@ -29,7 +29,6 @@ function ProfilePage(props) {
                 setStatusMsg("No user found"); // will only show if profile info is null
             }
             setMode(props.userInfo.username === profileUsername ? "owner" : "viewer");
-            console.log(profileInfo);
         }
         updateProfileInfo();
     }, [props.userInfo.username, profileUsername]);
@@ -68,7 +67,7 @@ function ProfilePage(props) {
 
                         <SuggestedProblemCard />
 
-                        <QuestionStatsCard />
+                        <ProblemStatsCard profileInfo={profileInfo}/>
 
                         <div className="m-4">
                             <div className="row">
@@ -82,7 +81,7 @@ function ProfilePage(props) {
                             </div>
                         </div>
 
-                        <SubmissionsStatsCard submissionsInfo={profileInfo.submissions}/>
+                        <SubmissionsStatsCard profileInfo={profileInfo}/>
                     </div>
                 </div>
             )}

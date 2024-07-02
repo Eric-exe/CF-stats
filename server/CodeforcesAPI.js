@@ -13,12 +13,16 @@ class CodeforcesAPI {
 
     static async updateUserStats(username) {
         const user = await prisma.User.findUnique({ where: { username } });
-        if (user === null || user.handle === null) {
-            return console.error("[Update user stats error]: No valid user or user handle");
+        if (!user || !user.handle) {
+            return console.error("No valid user or user handle");
         }
 
         const data = await this.get(`https://codeforces.com/api/user.status?handle=${user.handle}`).then((response) => response.json());
+        await this.updateUserSubmissionsAndStatus(data, username);
+        this.updateUserTotalStats(username);
+    }
 
+    static async updateUserSubmissionsAndStatus(data, username) {
         for (const submission of data.result) {
             // check if submission exists, if it does, that means everything after it also exists
             const existingSubmission = await prisma.Submission.findUnique({
@@ -31,7 +35,6 @@ class CodeforcesAPI {
 
             const problemId = `${submission.problem.contestId}-${submission.problem.index}`;
 
-            // create the newest submissions
             try {
                 await prisma.Submission.create({
                     data: {
@@ -46,39 +49,84 @@ class CodeforcesAPI {
                     },
                 });
             } catch (error) {
-                // most likely the problem doesn't exist in problems API
-                console.error("[Update submission error]: ", error); 
+                console.error("[Update submission error]: ", error); // most likely the problem doesn't exist in problems API
             }
 
             // Update the user's problem status
             try {
                 // create a status if it doesn't exist
                 await prisma.UserProblemStatus.upsert({
-                    where: { username_problemId: { username, problemId } },
-                    create: { solved: false, user: { connect: { username } }, problem: { connect: { id: problemId } } },
+                    where: {
+                        username_problemId: { username, problemId },
+                    },
+                    create: {
+                        user: { connect: { username } },
+                        problem: { connect: { id: problemId } },
+                    },
                     update: {},
                 });
 
-                // populate the status with relevant content
-                const data = {
-                    submissions: { increment: 1 },
-                    AC: { increment: (submission.verdict === "OK" ? 1 : 0) },
-                    user: { update: { lastUpdated: new Date() } }
-                };
-                if (submission.verdict === "OK") {
-                    data.solved = true;
-                }
-
                 await prisma.UserProblemStatus.update({
-                    where: { username_problemId: { username, problemId }},
-                    data
+                    where: {
+                        username_problemId: { username, problemId },
+                    },
+                    data: {
+                        submissions: { increment: 1, },
+                        AC: { increment: submission.verdict === "OK" ? 1 : 0, },
+                        user: {
+                            update: { lastUpdated: new Date() },
+                        },
+                    },
                 });
-
             } catch (error) {
-                // most likely the problem doesn't exist in problems API
-                console.error("[Update user problem status error]: ", error);
+                console.error("[Update user problem status error]: ", error); // most likely the problem doesn't exist in problems API
             }
         }
+    }
+
+    static async updateUserTotalStats(username) {
+        // count problems AC'ed
+        const totalProblemsAC = await prisma.UserProblemStatus.count({
+            where: {
+                username,
+                AC: { gt: 0 },
+            },
+        });
+
+        // count submission + AC for AC rate
+        const totalSubmissionsAndAC = await prisma.UserProblemStatus.aggregate({
+            where: { username },
+            _sum: {
+                submissions: true,
+                AC: true,
+            },
+        });
+
+        // count the frequency of a question tag
+        const problemStatuses = await prisma.UserProblemStatus.findMany({
+            where: { username },
+            include: { problem: true }
+        });
+
+        const tagFrequency = {};
+        for (const problemStatus of problemStatuses) {
+            for (const tag of problemStatus.problem.tags) {
+                if (!tagFrequency[tag]) {
+                    tagFrequency[tag] = 0;
+                }
+                tagFrequency[tag]++;
+            }
+        }
+
+        await prisma.User.update({
+            where: { username },
+            data: {
+                problemsAC: totalProblemsAC,
+                totalSubmissions: totalSubmissionsAndAC._sum.submissions,
+                totalAC: totalSubmissionsAndAC._sum.AC,
+                problemTags: tagFrequency,
+            },
+        });
     }
 
     static async updateProblems() {
