@@ -20,6 +20,7 @@ function SubmissionsStatsCard(props) {
                                         <th scope="col">Submission ID</th>
                                         <th scope="col">Problem</th>
                                         <th scope="col">Status</th>
+                                        <th scope="col">Submission Time</th>
                                         <th scope="col">Programming Language</th>
                                         <th scope="col">Time (ms)</th>
                                         <th scope="col">Memory (kb)</th>
@@ -27,7 +28,7 @@ function SubmissionsStatsCard(props) {
                                 </thead>
 
                                 <tbody className="table-group-divider">
-                                    {props.profileInfo.submissions.map((submission, index) => (
+                                    {props.profileInfo.submissions.slice(0, 1000).map((submission, index) => (
                                         <tr key={index}>
                                             <td>
                                                 <a
@@ -44,6 +45,7 @@ function SubmissionsStatsCard(props) {
                                                 </a>
                                             </td>
                                             <td>{submission.verdict}</td>
+                                            <td>{new Date(submission.timeCreated).toLocaleString()}</td>
                                             <td>{submission.programmingLang}</td>
                                             <td>{submission.timeUsed}</td>
                                             <td>{submission.memoryUsed / 1000}</td>

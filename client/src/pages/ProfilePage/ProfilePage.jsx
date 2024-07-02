@@ -50,7 +50,7 @@ function ProfilePage(props) {
                                     <b>Codeforces Handle:&nbsp;</b>{profileInfo.handle}
                                 </div>
                                 <div className="d-flex col-md-3 my-auto">
-                                    <b>Estimated Elo:&nbsp;</b>{profileInfo.estimatedElo}
+                                    <b>Estimated Rating:&nbsp;</b>{profileInfo.estimatedRating}
                                 </div>
                                 <div className="d-flex col-md-3 justify-content-between">
                                     <div className="my-auto">
@@ -72,17 +72,19 @@ function ProfilePage(props) {
                         <div className="m-4">
                             <div className="row">
                                 <div className="col-6">
-                                    <ActivityGraphStatsCard title="Submissions Activity" id="submisisons-activity-card" />
+                                    <ActivityGraphStatsCard title="Submissions Activity" id="submisisons-activity-card" activityArray={profileInfo.recentSubmissions}/>
                                 </div>
 
                                 <div className="col-6">
-                                    <ActivityGraphStatsCard title="Problems Solved Activity" id="problems-solved-activity-card" />
+                                    <ActivityGraphStatsCard title="Problems Solved Activity" id="problems-solved-activity-card" activityArray={profileInfo.recentAC}/>
                                 </div>
                             </div>
                         </div>
 
                         <SubmissionsStatsCard profileInfo={profileInfo}/>
                     </div>
+                    
+                    {JSON.stringify(profileInfo)}
                 </div>
             )}
         </>

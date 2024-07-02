@@ -18,11 +18,11 @@ class CodeforcesAPI {
         }
 
         const data = await this.get(`https://codeforces.com/api/user.status?handle=${user.handle}`).then((response) => response.json());
-        await this.updateUserSubmissionsAndStatus(data, username);
-        this.updateUserTotalStats(username);
+        await this.processUserSubmissions(data, username);
+        this.processUserStats(username, user.handle);
     }
 
-    static async updateUserSubmissionsAndStatus(data, username) {
+    static async processUserSubmissions(data, username) {
         for (const submission of data.result) {
             // check if submission exists, if it does, that means everything after it also exists
             const existingSubmission = await prisma.Submission.findUnique({
@@ -39,7 +39,7 @@ class CodeforcesAPI {
                 await prisma.Submission.create({
                     data: {
                         id: submission.id,
-                        authorHandle: submission.author.members[0].handle,
+                        authorUsername: username,
                         problemId,
                         timeCreated: new Date(submission.creationTimeSeconds * 1000),
                         programmingLang: submission.programmingLanguage,
@@ -71,11 +71,8 @@ class CodeforcesAPI {
                         username_problemId: { username, problemId },
                     },
                     data: {
-                        submissions: { increment: 1, },
+                        submissions: { increment: 1 },
                         AC: { increment: submission.verdict === "OK" ? 1 : 0, },
-                        user: {
-                            update: { lastUpdated: new Date() },
-                        },
                     },
                 });
             } catch (error) {
@@ -84,7 +81,7 @@ class CodeforcesAPI {
         }
     }
 
-    static async updateUserTotalStats(username) {
+    static async processUserStats(username) {
         // count problems AC'ed
         const totalProblemsAC = await prisma.UserProblemStatus.count({
             where: {
@@ -93,7 +90,7 @@ class CodeforcesAPI {
             },
         });
 
-        // count submission + AC for AC rate
+        // count submission + AC for AC rate, and avg for average elo of problem solved
         const totalSubmissionsAndAC = await prisma.UserProblemStatus.aggregate({
             where: { username },
             _sum: {
@@ -102,7 +99,7 @@ class CodeforcesAPI {
             },
         });
 
-        // count the frequency of a question tag
+        // count the frequency of a question tag, along with total rating
         const problemStatuses = await prisma.UserProblemStatus.findMany({
             where: { username },
             include: { problem: true }
@@ -110,12 +107,33 @@ class CodeforcesAPI {
 
         const tagFrequency = {};
         for (const problemStatus of problemStatuses) {
+            if (problemStatus.AC == 0) {
+                continue;
+            }
             for (const tag of problemStatus.problem.tags) {
                 if (!tagFrequency[tag]) {
                     tagFrequency[tag] = 0;
                 }
                 tagFrequency[tag]++;
             }
+        }
+
+        // count the number of submissions and AC over the last 60 days
+        const past60DaySubmissions = Array(60).fill(0), past60DayAC = Array(60).fill(0);
+        const sortedSubmissions = await prisma.Submission.findMany({
+            where: { authorUsername: username },
+            orderBy: { timeCreated: "desc" }
+        });
+
+        const timeNow = new Date();
+        for (const submission of sortedSubmissions) {
+            const dayDiff = Math.floor((timeNow - new Date(submission.timeCreated)) / (1000 * 60 * 60 * 24));
+            if (dayDiff < 60) {
+                past60DaySubmissions[dayDiff]++;
+                if (submission.verdict === "OK") {
+                    past60DayAC[dayDiff]++;
+                }
+            } 
         }
 
         await prisma.User.update({
@@ -125,6 +143,8 @@ class CodeforcesAPI {
                 totalSubmissions: totalSubmissionsAndAC._sum.submissions,
                 totalAC: totalSubmissionsAndAC._sum.AC,
                 problemTags: tagFrequency,
+                recentSubmissions: past60DaySubmissions,
+                recentAC: past60DayAC,
             },
         });
     }

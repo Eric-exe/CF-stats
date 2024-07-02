@@ -58,7 +58,7 @@ function ProblemStatsCard(props) {
 
                             <div className="col-md-4">Your Problems:</div>
 
-                            <div className="col-md-4">Problems in your Elo Range:</div>
+                            <div className="col-md-4">Problems in your Rating Range:</div>
                         </div>
                     </div>
                 </div>
