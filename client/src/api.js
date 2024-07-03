@@ -23,12 +23,24 @@ class API {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/createJWT", "POST", JSON.stringify({ code }), "");
     }
 
-    static getPrivateUserInfo(JWT) {
-        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/privateInfo", "GET", "", JWT);
+    static getPersonalUserInfo(JWT) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/personalInfo", "GET", "", JWT);
     }
 
     static getPublicUserInfo(username) {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/publicInfo", "POST", JSON.stringify({ username }), "");
+    }
+
+    static updateUserInfo(username) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/updateInfo", "POST", JSON.stringify({ username }), "");
+    }
+
+    static getCFLinkKey(JWT) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/keygen", "GET", "", JWT);
+    }
+
+    static linkCF(handle, JWT) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/linkCF", "POST", JSON.stringify({ handle }), JWT);
     }
 }
 

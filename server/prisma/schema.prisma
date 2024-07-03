@@ -14,60 +14,67 @@ datasource db {
 }
 
 model Problem {
-    id                      String                  @id @unique
-    contestId               Int
-    index                   String
-    name                    String
-    rating                  Int                      @default(-1)
-    tags                    String[]
+    id                          String                  @id @unique
+    contestId                   Int
+    index                       String
+    name                        String
+    rating                      Int                      @default(-1)
+    tags                        String[]
 
     // handles relationships, shouldn't be accessed from this field
-    assigned                User[]
-    userProblems            UserProblemStatus[]
-    submissions             Submission[]
+    assigned                    User[]
+    userProblems                UserProblemStatus[]
+    submissions                 Submission[]
 }
 
 model User {
-    username                String                  @id @unique
-    handle                  String?                 @unique
-    estimatedElo            Int                     @default(1000)
-    submissions             Submission[]
-    problems                UserProblemStatus[]
-    assignedProblem         Problem?                @relation(fields: [assignedProblemId], references: [id])
-    assignedProblemId       String?
-    lastMonthSubmissions    Int[]
-    lastMonthAC             Int[]
-    posts                   Post[]
+    username                    String                  @id @unique
+    handle                      String?                 @unique
+    estimatedRating             Int                     @default(1000)
+    submissions                 Submission[]
+    problems                    UserProblemStatus[]
+    problemsAC                  Int                     @default(0)
+    totalSubmissions            Int                     @default(0)
+    totalAC                     Int                     @default(0)
+    problemTags                 Json                    @default("{}")
+    assignedProblem             Problem?                @relation(fields: [assignedProblemId], references: [id])
+    assignedProblemId           String?
+    recentSubmissions           Int[]
+    recentAC                    Int[]
+    posts                       Post[]
+    lastUpdated                 DateTime                @updatedAt
+    cfLinkKey                   String                  @default("")
 }
 
 model Submission {
-    id                      Int                     @id 
-    author                  User                    @relation(fields: [authorHandle], references: [handle])
-    authorHandle            String                  
-    problem                 Problem                 @relation(fields: [problemId], references: [id])
-    problemId               String                  
-    timeCreated             DateTime
-    programmingLang         String
-    verdict                 String
-    timeUsed                Int
-    memoryUsed              Int
+    id                          Int                     @id 
+    author                      User                    @relation(fields: [authorUsername], references: [username], onDelete: Cascade)
+    authorUsername              String                  
+    problem                     Problem                 @relation(fields: [problemId], references: [id])
+    problemId                   String                  
+    timeCreated                 DateTime
+    programmingLang             String
+    verdict                     String
+    timeUsed                    Int
+    memoryUsed                  Int
 }
 
 model UserProblemStatus {
-    id                      Int                     @id @default(autoincrement())
-    user                    User                    @relation(fields: [username], references: [username])
-    username                String                  
-    problem                 Problem                 @relation(fields: [problemId], references: [id])
-    problemId               String
-    solved                  Boolean
+    id                          Int                     @id @default(autoincrement())
+    user                        User                    @relation(fields: [username], references: [username], onDelete: Cascade)
+    username                    String                  
+    problem                     Problem                 @relation(fields: [problemId], references: [id])
+    problemId                   String
+    submissions                 Int                     @default(0)
+    AC                          Int                     @default(0)
 
     @@unique([username, problemId])
 }
 
 model Post {
-    id                      Int                     @id @default(autoincrement())
-    author                  User                    @relation(fields: [authorUsername], references: [username])
-    authorUsername          String
+    id                          Int                     @id @default(autoincrement())
+    author                      User                    @relation(fields: [authorUsername], references: [username])
+    authorUsername              String
 
     @@index([authorUsername])
 }

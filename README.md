@@ -8,10 +8,10 @@
 - [x] Implement GitHub OAuth and persistent login
 
 ### Week 5
-- [ ] Create basic profile page UI
+- [x] Create basic profile page UI
 - [x] Process the questions from Codeforces
 - [ ] Create linking method to link user account to website
-- [ ] Create submission stats (attempts, AC, percentages)
+- [x] Create submission stats (attempts, AC, percentages)
 
 ### Week 6
 - [ ] Implement the question suggestion algorithm (should adjust the estimated Elo on whether a user can solve it and their attempts)

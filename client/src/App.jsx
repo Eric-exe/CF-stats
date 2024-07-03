@@ -7,9 +7,10 @@ import HomePage from "./pages/HomePage/HomePage.jsx";
 import ProblemsPage from "./pages/ProblemsPage/ProblemsPage.jsx";
 import ResourcesPage from "./pages/ResourcesPage/ResourcesPage.jsx";
 import ProfilePage from "./pages/ProfilePage/ProfilePage.jsx";
+import GitHubOAuthCallbackPage from "./pages/GitHubOAuthCallbackPage/GitHubOAuthCallbackPage.jsx"
 
 function App() {
-    const [JWT, setJWT] = useState(null);
+    const [JWT, setJWT] = useState("");
     const [userInfo, setUserInfo] = useState({});
 
     // load JWT from local storage if it exists
@@ -24,7 +25,7 @@ function App() {
     // gets user data from JWT. JWT can expire so remove local JWT if it is expired.
     useEffect(() => {
         const updateUserInfo = async () => {
-            const data = await API.getPrivateUserInfo(JWT).then(response => response.json());
+            const data = await API.getPersonalUserInfo(JWT).then(response => response.json());
             if (Object.prototype.hasOwnProperty.call(data, "error")) {
                 localStorage.removeItem("jwt"); // bad JWT, clear jwt from localStorage
             }
@@ -33,7 +34,7 @@ function App() {
             }
         }
 
-        if (JWT != null) {
+        if (JWT !== "") {
             updateUserInfo();
         }
     }, [JWT]);
@@ -41,12 +42,13 @@ function App() {
     return (
         <>
             <Router>
-                <NavBar JWTSetter={setJWT} userInfo={userInfo}/>
+                <NavBar userInfo={userInfo}/>
                 <Routes>
                     <Route index element={<HomePage/>}/>
                     <Route path="problems" element={<ProblemsPage/>}/>
                     <Route path="resources" element={<ResourcesPage/>}/>
-                    <Route path="profile/:profileUsername" element={<ProfilePage userInfo={userInfo}/>}/>
+                    <Route path="profile/:profileUsername" element={<ProfilePage userInfo={userInfo} JWT={JWT}/>}/>
+                    <Route path="auth/github/callback" element={<GitHubOAuthCallbackPage JWTSetter={setJWT}/>}/>
                 </Routes>
             </Router>
         </>
