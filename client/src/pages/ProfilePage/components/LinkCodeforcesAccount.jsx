@@ -3,8 +3,10 @@ import API from "../../../api.js";
 import propTypes from "prop-types";
 
 LinkCodeforcesAccount.propTypes = {
+    profileUsername: propTypes.string.isRequired,
     JWT: propTypes.string.isRequired,
-    profileInfoSetter: propTypes.func.isRequired, 
+    profileInfoSetter: propTypes.func.isRequired,
+    profileIsUpdatingSetter: propTypes.func.isRequired,
 };
 function LinkCodeforcesAccount(props) {
     const [status, setStatus] = useState("");
@@ -18,16 +20,28 @@ function LinkCodeforcesAccount(props) {
     };
 
     const handleCFLink = async () => {
-        const data = await API.linkCF(potentialHandle, props.JWT).then(response => response.json());
+        const data = await API.linkCF(potentialHandle, props.JWT).then((response) => response.json());
         if (Object.prototype.hasOwnProperty.call(data, "error")) {
+            // linking failed
             setStatus(data.error);
             setStatusIsGood(false);
-        }
-        else {
+        } else {
+            // linking successful, update and display user info
             setStatus("Handle linked!");
             setStatusIsGood(true);
             bootstrap.Modal.getInstance(document.getElementById("cfLinkModal")).hide();
-            props.profileInfoSetter(await API.getPersonalUserInfo(props.JWT).then(response => response.json()));
+            props.profileInfoSetter(data => ({...data, handle: potentialHandle}));
+            setPotentialHandle("");
+
+            props.profileIsUpdatingSetter(true);
+            console.log("HEY");
+            await API.updateUserInfo(props.profileUsername);
+            console.log("WHA");
+            await API.getPersonalUserInfo(props.JWT)
+                .then((response) => response.json())
+                .then((data) => props.profileInfoSetter(data));
+            console.log("OH");
+            props.profileIsUpdatingSetter(false);
         }
     };
 
@@ -54,9 +68,7 @@ function LinkCodeforcesAccount(props) {
                             ) : (
                                 <>
                                     <>
-                                        <div className={statusIsGood ? "text-success" : "text-danger"}>
-                                            {status}
-                                        </div>
+                                        <div className={statusIsGood ? "text-success" : "text-danger"}>{status}</div>
                                     </>
                                     <div className="row my-2">
                                         <div className="col-3 my-auto">Codeforces Handle:</div>
@@ -67,16 +79,16 @@ function LinkCodeforcesAccount(props) {
                                                 id="potentialHandleForm"
                                                 placeholder="Your Codeforces handle"
                                                 value={potentialHandle}
-                                                onChange={(event) => {setPotentialHandle(event.target.value)}}
+                                                onChange={(event) => {
+                                                    setPotentialHandle(event.target.value);
+                                                }}
                                             />
                                         </div>
                                     </div>
-
                                     <div className="row mb-4">
                                         <div className="col-3 my-auto">Key:</div>
                                         <div className="col-9 my-auto">{key}</div>
                                     </div>
-
                                     To link your Codeforces account:
                                     <ol>
                                         <li>Input your Codeforces handle above</li>

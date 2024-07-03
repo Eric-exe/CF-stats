@@ -24,7 +24,7 @@ class CodeforcesAPI {
             return console.error("[Failed to fetch user stats: ", error);
         }
         await this.processUserSubmissions(data, username);
-        this.processUserStats(username, user.handle);
+        await this.processUserStats(username, user.handle);
     }
 
     static async processUserSubmissions(data, username) {

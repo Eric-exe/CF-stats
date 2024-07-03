@@ -14,6 +14,8 @@ const USER_INCLUDES = {
 const KEYGEN_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 const KEY_LEN = 30;
 
+const DEFAULT_RATING = 1000;
+
 // takes in GitHub code from OAuth and generates a JWT based on github username
 router.post("/createJWT", async (req, res) => {
     const { code } = req.body;
@@ -90,12 +92,18 @@ router.get("/keygen", authenticateJWT, async (req, res) => {
 });
 
 router.post("/linkCF", authenticateJWT, async (req, res) => {
+    // check if user is already linked
+    const potentialUserHasHandle = await prisma.User.findUnique({
+        where: { username: req.user.username }
+    });
+    if (potentialUserHasHandle.handle !== null) {
+        return res.status(403).json({"error": "User already linked to a handle"});
+    }
     // check if handle is already linked
-    const potentialUser = await prisma.User.findUnique({
+    const potentialUserWithHandle = await prisma.User.findUnique({
         where: { handle: req.body.handle }
     });
-
-    if (potentialUser !== null) {
+    if (potentialUserWithHandle !== null) {
         return res.status(403).json({"error": "Handle already linked"})
     }
 
@@ -113,7 +121,6 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
     const userToLink = await prisma.User.findUnique({
         where: { username: req.user.username }
     });
-
     if (userToLink.cfLinkKey != data.result[0].firstName) {
         return res.status(403).json({"error": "First name does not match key"});
     }
@@ -124,11 +131,23 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
         data: {
             handle: req.body.handle,
             cfLinkKey: "",
+            estimatedRating: data.result[0].rating || DEFAULT_RATING,
         }
     });
-
+    
     return res.json(user);
 });
+
+router.post("/updateInfo", async (req, res) => {
+    try {
+        await CodeforcesAPI.updateUserStats(req.body.username);
+        return res.status(200).json({ "status": "OK" });
+    }
+    catch (error) {
+        console.error("[Error updating info]: ", error);
+        return res.status(409).json({ "status": "FAILED", error });
+    }
+})
 
 // TESTING STUFF (IGNORE)
 router.get("/test", async (req, res) => {

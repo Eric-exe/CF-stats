@@ -31,6 +31,10 @@ class API {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/publicInfo", "POST", JSON.stringify({ username }), "");
     }
 
+    static updateUserInfo(username) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/updateInfo", "POST", JSON.stringify({ username }), "");
+    }
+
     static getCFLinkKey(JWT) {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/keygen", "GET", "", JWT);
     }

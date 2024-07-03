@@ -17,7 +17,8 @@ function ProfilePage(props) {
     const { profileUsername } = useParams();
     const [mode, setMode] = useState("viewer");
     const [profileInfo, setProfileInfo] = useState(null);
-    const [statusMsg, setStatusMsg] = useState("Loading...");
+    const [generalStatusMsg, setGeneralStatusMsg] = useState("Loading...");
+    const [profileIsUpdating, setProfileIsUpdating] = useState(false);
 
     // update modes when username is updated
     useEffect(() => {
@@ -28,7 +29,7 @@ function ProfilePage(props) {
             } else {
                 setMode("viewer");
                 setProfileInfo(await API.getPublicUserInfo(profileUsername).then((response) => response.json()));
-                setStatusMsg("No user found"); // will only show if profile info is null
+                setGeneralStatusMsg("No user found"); // will only show if profile info is null
             }
             setMode(props.userInfo.username === profileUsername ? "owner" : "viewer");
         };
@@ -38,10 +39,20 @@ function ProfilePage(props) {
     return (
         <>
             {profileInfo === null ? (
-                <p>{statusMsg}</p>
+                <p>{generalStatusMsg}</p>
             ) : (
                 <div className="profile-page row justify-content-center container-fluid">
                     <div className="col-12">
+                            {profileIsUpdating ? (
+                                <div className="d-flex justify-content-center align-items-center mt-4">
+                                    <div className="spinner-border" role="status">
+                                        <span className="sr-only"/>
+                                    </div>
+                                    &nbsp;Updating user info...
+                                </div>
+                            ) : (
+                                <></>
+                            )}
                         {/* General user stat bar */}
                         <div className="card card-body shadow m-4 overflow-auto">
                             <div className="row">
@@ -52,16 +63,18 @@ function ProfilePage(props) {
                                 <div className="d-flex col-lg-3 my-auto flex-wrap">
                                     {/* Display username or link button if it doesn't exist and user is owner */}
                                     <b className="text-nowrap my-auto">Codeforces Handle:&nbsp;</b>
-                                    {
-                                        profileInfo.handle !== null ?
-                                        <>{profileInfo.handle}</>:
-                                        (
-                                            mode == "owner" ?
-                                            <LinkCodeforcesAccount JWT={props.JWT} profileInfoSetter={setProfileInfo}/> :
-                                            <></>
-                                        )
-                                    }
-                                    
+                                    {profileInfo.handle !== null ? (
+                                        <>{profileInfo.handle}</>
+                                    ) : mode == "owner" ? (
+                                        <LinkCodeforcesAccount
+                                            profileUsername={profileUsername}
+                                            JWT={props.JWT}
+                                            profileInfoSetter={setProfileInfo}
+                                            profileIsUpdatingSetter={setProfileIsUpdating}
+                                        />
+                                    ) : (
+                                        <></>
+                                    )}
                                 </div>
                                 <div className="d-flex col-lg-3 flex-wrap my-auto">
                                     <b className="text-nowrap">Estimated Rating:&nbsp;</b>
