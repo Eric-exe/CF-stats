@@ -24,7 +24,7 @@ function ProblemStatsCard(props) {
                                 <div>
                                     Submissions (AC/total):&nbsp;
                                     {props.profileInfo.totalAC + "/" + props.profileInfo.totalSubmissions}
-                                    &nbsp;({Math.round((props.profileInfo.totalAC / props.profileInfo.totalSubmissions) * 100 * 100) / 100}
+                                    &nbsp;({Math.round((props.profileInfo.totalAC / Math.max(1, props.profileInfo.totalSubmissions)) * 100 * 100) / 100}
                                     %)
                                 </div>
                                 <hr />

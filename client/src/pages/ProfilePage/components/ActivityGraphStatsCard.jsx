@@ -15,14 +15,18 @@ function GraphStatsCard(props) {
         return res;
     };
 
-    const daily = props.activityArray[0];
-    const prevDaily = props.activityArray[1];
-    const weekly = arraySum(props.activityArray.slice(0, 7));
-    const prevWeekly = arraySum(props.activityArray.slice(7, 14));
-    const monthly = arraySum(props.activityArray.slice(0, 30));
-    const prevMonthly = arraySum(props.activityArray.slice(30, 60));
+    // guard to check empty array as that is the default in schema
+    let activityArray = props.activityArray;
+    if (activityArray.length === 0) {
+        activityArray = Array(60).fill(0);
+    }
 
-    console.log(props.activityArray);
+    const daily = activityArray[0];
+    const prevDaily = activityArray[1];
+    const weekly = arraySum(activityArray.slice(0, 7));
+    const prevWeekly = arraySum(activityArray.slice(7, 14));
+    const monthly = arraySum(activityArray.slice(0, 30));
+    const prevMonthly = arraySum(activityArray.slice(30, 60));
 
     return (
         <div className="card shadow">

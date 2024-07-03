@@ -30,6 +30,14 @@ class API {
     static getPublicUserInfo(username) {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/publicInfo", "POST", JSON.stringify({ username }), "");
     }
+
+    static getCFLinkKey(JWT) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/keygen", "GET", "", JWT);
+    }
+
+    static linkCF(handle, JWT) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/linkCF", "POST", JSON.stringify({ handle }), JWT);
+    }
 }
 
 export default API;

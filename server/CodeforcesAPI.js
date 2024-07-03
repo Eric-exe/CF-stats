@@ -16,8 +16,13 @@ class CodeforcesAPI {
         if (!user || !user.handle) {
             return console.error("No valid user or user handle");
         }
-
-        const data = await this.get(`https://codeforces.com/api/user.status?handle=${user.handle}`).then((response) => response.json());
+        let data = {};
+        try {
+            data = await this.get(`https://codeforces.com/api/user.status?handle=${user.handle}`).then(response => response.json());
+        }
+        catch (error) {
+            return console.error("[Failed to fetch user stats: ", error);
+        }
         await this.processUserSubmissions(data, username);
         this.processUserStats(username, user.handle);
     }
@@ -187,6 +192,16 @@ class CodeforcesAPI {
             console.error("[Update problem error]: ", error);
         }
     }
-}
+
+    static async getUserInfo(handle) {
+        try {
+            const data = await this.get(`https://codeforces.com/api/user.info?handles=${handle}`).then(response => response.json());
+            return data;
+        }
+        catch (error) {
+            throw new Error("Failed to fetch user info");
+        }
+    }
+} 
 
 module.exports = CodeforcesAPI;

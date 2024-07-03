@@ -10,7 +10,7 @@ import ProfilePage from "./pages/ProfilePage/ProfilePage.jsx";
 import GitHubOAuthCallbackPage from "./pages/GitHubOAuthCallbackPage/GitHubOAuthCallbackPage.jsx"
 
 function App() {
-    const [JWT, setJWT] = useState(null);
+    const [JWT, setJWT] = useState("");
     const [userInfo, setUserInfo] = useState({});
 
     // load JWT from local storage if it exists
@@ -34,7 +34,7 @@ function App() {
             }
         }
 
-        if (JWT != null) {
+        if (JWT !== "") {
             updateUserInfo();
         }
     }, [JWT]);
@@ -47,7 +47,7 @@ function App() {
                     <Route index element={<HomePage/>}/>
                     <Route path="problems" element={<ProblemsPage/>}/>
                     <Route path="resources" element={<ResourcesPage/>}/>
-                    <Route path="profile/:profileUsername" element={<ProfilePage userInfo={userInfo}/>}/>
+                    <Route path="profile/:profileUsername" element={<ProfilePage userInfo={userInfo} JWT={JWT}/>}/>
                     <Route path="auth/github/callback" element={<GitHubOAuthCallbackPage JWTSetter={setJWT}/>}/>
                 </Routes>
             </Router>

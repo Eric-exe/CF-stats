@@ -43,6 +43,7 @@ model User {
     recentAC                    Int[]
     posts                       Post[]
     lastUpdated                 DateTime                @updatedAt
+    cfLinkKey                   String                  @default("")
 }
 
 model Submission {
