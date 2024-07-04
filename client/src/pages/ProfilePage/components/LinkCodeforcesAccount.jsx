@@ -16,7 +16,13 @@ function LinkCodeforcesAccount(props) {
 
     const genKey = async () => {
         const data = await API.getCFLinkKey(props.JWT).then((response) => response.json());
-        setKey(data["key"]);
+        if (Object.prototype.hasOwnProperty.call(data, "error")) {
+            setStatus(data.error);
+            setKey("N/A");
+        }
+        else {
+            setKey(data["key"]);
+        }
     };
 
     const handleCFLink = async () => {
@@ -34,13 +40,10 @@ function LinkCodeforcesAccount(props) {
             setPotentialHandle("");
 
             props.profileIsUpdatingSetter(true);
-            console.log("HEY");
             await API.updateUserInfo(props.profileUsername);
-            console.log("WHA");
             await API.getPersonalUserInfo(props.JWT)
                 .then((response) => response.json())
                 .then((data) => props.profileInfoSetter(data));
-            console.log("OH");
             props.profileIsUpdatingSetter(false);
         }
     };

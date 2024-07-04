@@ -14,7 +14,7 @@ function authenticateJWT(req, res, next) {
         req["user"] = decoded;
         next();
     } catch (error) {
-        return res.status(403).json({ error: "Bad token" });
+        return res.status(403).json({ error: "Bad token, refresh and re-login" });
     }   
 }
 

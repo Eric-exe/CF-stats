@@ -28,6 +28,7 @@ function App() {
             const data = await API.getPersonalUserInfo(JWT).then(response => response.json());
             if (Object.prototype.hasOwnProperty.call(data, "error")) {
                 localStorage.removeItem("jwt"); // bad JWT, clear jwt from localStorage
+                setJWT("");
             }
             else {
                 setUserInfo(data);

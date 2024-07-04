@@ -24,7 +24,7 @@ function ProfilePage(props) {
     useEffect(() => {
         const updateProfileInfo = async () => {
             if (props.userInfo.username === profileUsername) {
-                // setMode("owner");
+                setMode("owner");
                 setProfileInfo(props.userInfo); // user info stores all private info
             } else {
                 setMode("viewer");
