@@ -73,7 +73,7 @@ model UserProblemStatus {
 
 model Post {
     id                          Int                     @id @default(autoincrement())
-    author                      User                    @relation(fields: [authorUsername], references: [username])
+    author                      User                    @relation(fields: [authorUsername], references: [username], onDelete: Cascade)
     authorUsername              String
 
     @@index([authorUsername])

@@ -5,6 +5,7 @@ import propTypes from "prop-types";
 LinkCodeforcesAccount.propTypes = {
     profileUsername: propTypes.string.isRequired,
     JWT: propTypes.string.isRequired,
+    userInfoSetter: propTypes.func.isRequired,
     profileInfoSetter: propTypes.func.isRequired,
     profileIsUpdatingSetter: propTypes.func.isRequired,
 };
@@ -43,7 +44,7 @@ function LinkCodeforcesAccount(props) {
             await API.updateUserInfo(props.profileUsername);
             await API.getPersonalUserInfo(props.JWT)
                 .then((response) => response.json())
-                .then((data) => props.profileInfoSetter(data));
+                .then((data) => {props.profileInfoSetter(data); props.userInfoSetter(data)});
             props.profileIsUpdatingSetter(false);
         }
     };

@@ -10,6 +10,7 @@ import SubmissionsStatsCard from "./components/SubmissionsStatsCard";
 
 ProfilePage.propTypes = {
     userInfo: propTypes.object.isRequired,
+    userInfoSetter: propTypes.func.isRequired, 
     JWT: propTypes.string.isRequired,
 };
 
@@ -69,6 +70,7 @@ function ProfilePage(props) {
                                         <LinkCodeforcesAccount
                                             profileUsername={profileUsername}
                                             JWT={props.JWT}
+                                            userInfoSetter={props.userInfoSetter}
                                             profileInfoSetter={setProfileInfo}
                                             profileIsUpdatingSetter={setProfileIsUpdating}
                                         />

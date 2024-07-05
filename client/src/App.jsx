@@ -48,7 +48,7 @@ function App() {
                     <Route index element={<HomePage/>}/>
                     <Route path="problems" element={<ProblemsPage/>}/>
                     <Route path="resources" element={<ResourcesPage/>}/>
-                    <Route path="profile/:profileUsername" element={<ProfilePage userInfo={userInfo} JWT={JWT}/>}/>
+                    <Route path="profile/:profileUsername" element={<ProfilePage userInfo={userInfo} userInfoSetter={setUserInfo} JWT={JWT}/>}/>
                     <Route path="auth/github/callback" element={<GitHubOAuthCallbackPage JWTSetter={setJWT}/>}/>
                 </Routes>
             </Router>
