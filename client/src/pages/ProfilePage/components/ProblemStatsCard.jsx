@@ -19,7 +19,7 @@ function ProblemStatsCard(props) {
                     <div className="card-body">
                         <div className="row">
                             <div className="col-md-4">
-                                <div>Problems attempted:&nbsp;{props.profileInfo.problems.length}</div>
+                                <div>Problems attempted:&nbsp;{props.profileInfo.problemStatuses.length}</div>
                                 <div>Problems AC:&nbsp;{props.profileInfo.problemsAC}</div>
                                 <div>
                                     Submissions (AC/total):&nbsp;

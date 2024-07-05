@@ -32,7 +32,7 @@ model User {
     handle                      String?                 @unique
     estimatedRating             Int                     @default(1000)
     submissions                 Submission[]
-    problems                    UserProblemStatus[]
+    problemStatuses             UserProblemStatus[]
     problemsAC                  Int                     @default(0)
     totalSubmissions            Int                     @default(0)
     totalAC                     Int                     @default(0)

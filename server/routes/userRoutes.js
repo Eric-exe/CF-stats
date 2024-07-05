@@ -7,8 +7,11 @@ const authenticateJWT = require("./authenticateJWT");
 const CodeforcesAPI = require("../CodeforcesAPI");
 
 const USER_INCLUDES = {
-    problems: true, 
-    submissions: { include: { problem: true } },
+    problemStatuses: true, 
+    submissions: { 
+        include: { problem: true },
+        orderBy: { timeCreated: "desc" }
+    },
 };
 
 const KEYGEN_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
