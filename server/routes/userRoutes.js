@@ -100,7 +100,7 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
         where: { username: req.user.username }
     });
     if (potentialUserHasHandle.handle !== null) {
-        return res.status(403).json({"error": "User already linked to a handle"});
+        return res.status(403).json({"error": "User already linked to a handle. Refresh the page."});
     }
     // check if handle is already linked
     const potentialUserWithHandle = await prisma.User.findUnique({

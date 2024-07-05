@@ -59,25 +59,21 @@ class CodeforcesAPI {
 
             // Update the user's problem status
             try {
-                // create a status if it doesn't exist
-                await prisma.UserProblemStatus.upsert({
+                // create a status if it doesn't exist and update submission + AC count
+                const currentProblemStatus = await prisma.UserProblemStatus.upsert({
                     where: {
                         username_problemId: { username, problemId },
                     },
                     create: {
                         user: { connect: { username } },
                         problem: { connect: { id: problemId } },
+                        lastAttempted: new Date(submission.creationTimeSeconds * 1000),
+                        submission: 1,
+                        AC: (submission.verdict === "OK" ? 1 : 0),
                     },
-                    update: {},
-                });
-
-                await prisma.UserProblemStatus.update({
-                    where: {
-                        username_problemId: { username, problemId },
-                    },
-                    data: {
-                        submissions: { increment: 1 },
-                        AC: { increment: submission.verdict === "OK" ? 1 : 0, },
+                    update: {
+                        submission: { increment: 1 },
+                        AC: { increment: submission.verdict === "OK" ? 1 : 0 }
                     },
                 });
             } catch (error) {
@@ -126,19 +122,20 @@ class CodeforcesAPI {
         // count the number of submissions and AC over the last 60 days
         const past60DaySubmissions = Array(60).fill(0), past60DayAC = Array(60).fill(0);
         const sortedSubmissions = await prisma.Submission.findMany({
-            where: { authorUsername: username },
+            where: { 
+                authorUsername: username,
+                timeCreated: { gte: new Date(new Date().setDate(new Date().getDate() - 60)) }
+            },
             orderBy: { timeCreated: "desc" }
         });
 
         const timeNow = new Date();
         for (const submission of sortedSubmissions) {
             const dayDiff = Math.floor((timeNow - new Date(submission.timeCreated)) / (1000 * 60 * 60 * 24));
-            if (dayDiff < 60) {
-                past60DaySubmissions[dayDiff]++;
-                if (submission.verdict === "OK") {
-                    past60DayAC[dayDiff]++;
-                }
-            } 
+            past60DaySubmissions[dayDiff]++;
+            if (submission.verdict === "OK") {
+                past60DayAC[dayDiff]++;
+            }
         }
 
         await prisma.User.update({
@@ -197,8 +194,7 @@ class CodeforcesAPI {
         try {
             const data = await this.get(`https://codeforces.com/api/user.info?handles=${handle}`).then(response => response.json());
             return data;
-        }
-        catch (error) {
+        } catch (error) {
             throw new Error("Failed to fetch user info");
         }
     }
