@@ -91,7 +91,7 @@ function LinkCodeforcesAccount(props) {
                                     </div>
                                     <div className="row mb-4">
                                         <div className="col-3 my-auto">Key:</div>
-                                        <div className="col-9 my-auto">{key}</div>
+                                        <div className="col-9 my-auto user-select-all">{key}</div>
                                     </div>
                                     To link your Codeforces account:
                                     <ol>
