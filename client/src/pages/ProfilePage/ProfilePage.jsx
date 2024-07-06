@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import propTypes from "prop-types";
 import API from "../../api";
 import LinkCodeforcesAccount from "./components/LinkCodeforcesAccount";
-import SuggestedProblemCard from "./components/SuggestedProblemCard";
+import SuggestedProblemCard from "./components/SuggestedProblemCard/SuggestedProblemCard";
 import ProblemStatsCard from "./components/ProblemStatsCard";
 import ActivityGraphStatsCard from "./components/ActivityGraphStatsCard";
 import SubmissionsStatsCard from "./components/SubmissionsStatsCard";
@@ -16,7 +16,7 @@ ProfilePage.propTypes = {
 
 function ProfilePage(props) {
     const { profileUsername } = useParams();
-    const [mode, setMode] = useState("viewer");
+    const [pageMode, setPageMode] = useState("viewer");
     const [profileInfo, setProfileInfo] = useState(null);
     const [generalStatusMsg, setGeneralStatusMsg] = useState("Loading...");
     const [profileIsUpdating, setProfileIsUpdating] = useState(false);
@@ -25,14 +25,14 @@ function ProfilePage(props) {
     useEffect(() => {
         const updateProfileInfo = async () => {
             if (props.userInfo.username === profileUsername) {
-                setMode("owner");
+                setPageMode("owner");
                 setProfileInfo(props.userInfo); // user info stores all private info
             } else {
-                setMode("viewer");
+                setPageMode("viewer");
                 setProfileInfo(await API.getPublicUserInfo(profileUsername).then((response) => response.json()));
                 setGeneralStatusMsg("No user found"); // will only show if profile info is null
             }
-            setMode(props.userInfo.username === profileUsername ? "owner" : "viewer");
+            setPageMode(props.userInfo.username === profileUsername ? "owner" : "viewer");
         };
         updateProfileInfo();
     }, [props.userInfo.username, profileUsername]);
@@ -66,7 +66,7 @@ function ProfilePage(props) {
                                     <b className="text-nowrap my-auto">Codeforces Handle:&nbsp;</b>
                                     {profileInfo.handle !== null ? (
                                         <>{profileInfo.handle}</>
-                                    ) : mode == "owner" ? (
+                                    ) : pageMode == "owner" ? (
                                         <LinkCodeforcesAccount
                                             profileUsername={profileUsername}
                                             JWT={props.JWT}
@@ -100,7 +100,13 @@ function ProfilePage(props) {
                             <p className="text-center">User has not linked their Codeforces account</p>
                         ) : (
                             <>
-                                <SuggestedProblemCard />
+                                {
+                                    pageMode === "owner" ? 
+                                    <SuggestedProblemCard 
+                                        profileInfo={profileInfo}
+                                    /> :
+                                    <></>
+                                }
 
                                 <ProblemStatsCard profileInfo={profileInfo} />
 

@@ -1,3 +1,10 @@
+import RecentProblemsRater from "./components/RecentProblemsRater";
+import propTypes from "prop-types";
+
+SuggestedProblemCard.propTypes = {
+    profileInfo: propTypes.object.isRequired
+}
+
 const PROBLEM_TAGS = [
     "dfs and similar",
     "divide and conquer",
@@ -37,7 +44,7 @@ const PROBLEM_TAGS = [
     "chinese remainder theorem"
 ]
 
-function SuggestedProblemCard() {
+function SuggestedProblemCard(props) {
     return (
         <div className="card shadow m-4">
             <div className="card-header" data-bs-toggle="collapse" data-bs-target="#suggested-problem-body" role="button">
@@ -46,7 +53,9 @@ function SuggestedProblemCard() {
             <div className="collapse show" id="suggested-problem-body">
                 <div className="container-fluid">
                     <div className="card-body">
-                        Hi
+                        
+
+                        <RecentProblemsRater problemStatuses={props.profileInfo.problemStatuses}/>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,8 @@
+#problems-rater-button {
+    background-color: #f8f9fa;
+}
+
+#problems-rater-button:not(.collapsed) {
+    color: black;
+    background-color: #f8f9fa;
+}

@@ -60,7 +60,7 @@ class CodeforcesAPI {
             // Update the user's problem status
             try {
                 // create a status if it doesn't exist and update submission + AC count
-                const currentProblemStatus = await prisma.UserProblemStatus.upsert({
+                await prisma.UserProblemStatus.upsert({
                     where: {
                         username_problemId: { username, problemId },
                     },
@@ -68,11 +68,11 @@ class CodeforcesAPI {
                         user: { connect: { username } },
                         problem: { connect: { id: problemId } },
                         lastAttempted: new Date(submission.creationTimeSeconds * 1000),
-                        submission: 1,
+                        submissions: 1,
                         AC: (submission.verdict === "OK" ? 1 : 0),
                     },
                     update: {
-                        submission: { increment: 1 },
+                        submissions: { increment: 1 },
                         AC: { increment: submission.verdict === "OK" ? 1 : 0 }
                     },
                 });
@@ -168,7 +168,7 @@ class CodeforcesAPI {
                     });
 
                     if (existingProblem !== null) {
-                        break;
+                        continue;
                     }
 
                     await prisma.Problem.create({

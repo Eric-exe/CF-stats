@@ -7,7 +7,10 @@ const authenticateJWT = require("./authenticateJWT");
 const CodeforcesAPI = require("../CodeforcesAPI");
 
 const USER_INCLUDES = {
-    problemStatuses: true, 
+    problemStatuses: {
+        include: { problem: true },
+        orderBy: { lastAttempted: "desc" }
+    }, 
     submissions: { 
         include: { problem: true },
         orderBy: { timeCreated: "desc" }
