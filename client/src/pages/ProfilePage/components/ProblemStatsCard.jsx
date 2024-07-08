@@ -4,10 +4,27 @@ ProblemStatsCard.propTypes = {
     profileInfo: propTypes.object.isRequired,
 };
 
+const BAYESIAN_MAX = 5; // if less than 5 frequency, populate with average
+
 function ProblemStatsCard(props) {
-    // handle common tags
-    const tags = Object.keys(props.profileInfo.problemTags);
-    tags.sort((a, b) => props.profileInfo.problemTags[b] - props.profileInfo.problemTags[a]);
+    // handle strengths/weaknesses display
+    const tags = Object.keys(props.profileInfo.tagsFrequency);
+    const difficulties = {};
+    for (const tag of tags) {
+        // apply bayesian average to make sure small frequencies don't have much say
+        const systemAdd = Math.max(BAYESIAN_MAX - props.profileInfo.tagsFrequency[tag], 0);
+        difficulties[tag] = (props.profileInfo.tagsDifficulty[tag] + systemAdd * 3) / (props.profileInfo.tagsFrequency[tag] + systemAdd);
+    }
+    tags.sort((a, b) => difficulties[a] - difficulties[b]);
+    let strengths = [];
+    let weaknesses = [];
+    for (let i = 0; i < tags.length && i < 7; i++) {
+        strengths.push(tags[i]);
+    }
+    for (let i = 0; i < 7 && tags.length - i - 1 >= 7; i++) {
+        weaknesses.push(tags[tags.length - i - 1]);
+    }
+
 
     return (
         <div className="card shadow m-4">
@@ -24,40 +41,31 @@ function ProblemStatsCard(props) {
                                 <div>
                                     Submissions (AC/total):&nbsp;
                                     {props.profileInfo.totalAC + "/" + props.profileInfo.totalSubmissions}
-                                    &nbsp;({Math.round((props.profileInfo.totalAC / Math.max(1, props.profileInfo.totalSubmissions)) * 100 * 100) / 100}
+                                    &nbsp;(
+                                    {Math.round((props.profileInfo.totalAC / Math.max(1, props.profileInfo.totalSubmissions)) * 100 * 100) /
+                                        100}
                                     %)
                                 </div>
                                 <hr />
-                                Most common topics practiced:
-                                {(() => {
-                                    const rows = [];
-                                    for (let i = 0; i < Math.min(tags.length, 5); i++) {
-                                        rows.push(
-                                            <div key={i} className="row">
-                                                <div className="col-6 text-truncate">
-                                                    <span className="badge rounded-pill bg-secondary">{tags[i]}</span>
-                                                    &nbsp;{props.profileInfo.problemTags[tags[i]]}
-                                                </div>
-                                                <div className="col-6 text-truncate">
-                                                    {i + 5 < tags.length ? (
-                                                        <>
-                                                            <span className="badge rounded-pill bg-secondary">{tags[i + 5]}</span>
-                                                            &nbsp;{props.profileInfo.problemTags[tags[i + 5]]}
-                                                        </>
-                                                    ) : (
-                                                        ""
-                                                    )}
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-
-                                    return rows;
-                                })()}
+                                Strengths:
+                                <div>
+                                    {strengths.map((strength, index) => (
+                                        <div key={index} className="badge rounded-pill bg-secondary me-1">
+                                            {strength}
+                                        </div>
+                                    ))}
+                                </div>
+                                Weaknesses:
+                                <div>
+                                    {weaknesses.map((weakness, index) => (
+                                        <div key={index} className="badge rounded-pill bg-secondary me-1">
+                                            {weakness}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
 
                             <div className="col-md-4">Your Problems:</div>
-
                             <div className="col-md-4">Problems in your Rating Range:</div>
                         </div>
                     </div>

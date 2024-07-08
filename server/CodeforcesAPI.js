@@ -18,9 +18,8 @@ class CodeforcesAPI {
         }
         let data = {};
         try {
-            data = await this.get(`https://codeforces.com/api/user.status?handle=${user.handle}`).then(response => response.json());
-        }
-        catch (error) {
+            data = await this.get(`https://codeforces.com/api/user.status?handle=${user.handle}`).then((response) => response.json());
+        } catch (error) {
             return console.error("[Failed to fetch user stats: ", error);
         }
         await this.processUserSubmissions(data, username);
@@ -69,11 +68,11 @@ class CodeforcesAPI {
                         problem: { connect: { id: problemId } },
                         lastAttempted: new Date(submission.creationTimeSeconds * 1000),
                         submissions: 1,
-                        AC: (submission.verdict === "OK" ? 1 : 0),
+                        AC: submission.verdict === "OK" ? 1 : 0,
                     },
                     update: {
                         submissions: { increment: 1 },
-                        AC: { increment: submission.verdict === "OK" ? 1 : 0 }
+                        AC: { increment: submission.verdict === "OK" ? 1 : 0 },
                     },
                 });
             } catch (error) {
@@ -91,7 +90,7 @@ class CodeforcesAPI {
             },
         });
 
-        // count submission + AC for AC rate, and avg for average elo of problem solved
+        // count submission + AC for AC rate, and avg for average rating of problem solved
         const totalSubmissionsAndAC = await prisma.UserProblemStatus.aggregate({
             where: { username },
             _sum: {
@@ -100,33 +99,58 @@ class CodeforcesAPI {
             },
         });
 
-        // count the frequency of a question tag, along with total rating
         const problemStatuses = await prisma.UserProblemStatus.findMany({
             where: { username },
-            include: { problem: true }
+            include: {
+                problem: { include: { submissions: { orderBy: { timeCreated: "asc" } } } },
+            },
         });
 
-        const tagFrequency = {};
+        // count the frequency of a question tag and tag difficulty
+        const tagsFrequency = {};
+        const tagsDifficulty = {};
         for (const problemStatus of problemStatuses) {
-            if (problemStatus.AC == 0) {
-                continue;
-            }
-            for (const tag of problemStatus.problem.tags) {
-                if (!tagFrequency[tag]) {
-                    tagFrequency[tag] = 0;
+            // calculate the difficulty of this problem if user didn't submit
+            // based on submissions before AC (not accurate but gets the job done)
+            let userDifficultyRating = problemStatus.userDifficultyRating;
+            if (userDifficultyRating == -1) {
+                let submissionsBeforeAC = 0;
+                let ACed = false;
+                for (const submission of problemStatus.problem.submissions) {
+                    if (submission.verdict === "OK") {
+                        ACed = true;
+                        break;
+                    }
+                    submissionsBeforeAC++;
                 }
-                tagFrequency[tag]++;
+                userDifficultyRating = ACed ? Math.min(1 + submissionsBeforeAC, 5) : 5;
+                await prisma.UserProblemStatus.update({
+                    where: { username_problemId: { username, problemId: problemStatus.problemId } },
+                    data: { userDifficultyRating },
+                });
+            }
+
+            for (const tag of problemStatus.problem.tags) {
+                if (!tagsFrequency[tag]) {
+                    tagsFrequency[tag] = 0;
+                }
+                tagsFrequency[tag]++;
+                if (!tagsDifficulty[tag]) {
+                    tagsDifficulty[tag] = 0;
+                }
+                tagsDifficulty[tag] += userDifficultyRating;
             }
         }
 
         // count the number of submissions and AC over the last 60 days
-        const past60DaySubmissions = Array(60).fill(0), past60DayAC = Array(60).fill(0);
+        const past60DaySubmissions = Array(60).fill(0),
+            past60DayAC = Array(60).fill(0);
         const sortedSubmissions = await prisma.Submission.findMany({
-            where: { 
+            where: {
                 authorUsername: username,
-                timeCreated: { gte: new Date(new Date().setDate(new Date().getDate() - 60)) }
+                timeCreated: { gte: new Date(new Date().setDate(new Date().getDate() - 60)) },
             },
-            orderBy: { timeCreated: "desc" }
+            orderBy: { timeCreated: "desc" },
         });
 
         const timeNow = new Date();
@@ -144,7 +168,8 @@ class CodeforcesAPI {
                 problemsAC: totalProblemsAC,
                 totalSubmissions: totalSubmissionsAndAC._sum.submissions,
                 totalAC: totalSubmissionsAndAC._sum.AC,
-                problemTags: tagFrequency,
+                tagsFrequency,
+                tagsDifficulty,
                 recentSubmissions: past60DaySubmissions,
                 recentAC: past60DayAC,
             },
@@ -192,12 +217,12 @@ class CodeforcesAPI {
 
     static async getUserInfo(handle) {
         try {
-            const data = await this.get(`https://codeforces.com/api/user.info?handles=${handle}`).then(response => response.json());
+            const data = await this.get(`https://codeforces.com/api/user.info?handles=${handle}`).then((response) => response.json());
             return data;
         } catch (error) {
             throw new Error("Failed to fetch user info");
         }
     }
-} 
+}
 
 module.exports = CodeforcesAPI;

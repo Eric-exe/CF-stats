@@ -12,6 +12,7 @@ ProfilePage.propTypes = {
     userInfo: propTypes.object.isRequired,
     userInfoSetter: propTypes.func.isRequired, 
     JWT: propTypes.string.isRequired,
+    JWTSetter: propTypes.func.isRequired,
 };
 
 function ProfilePage(props) {
@@ -29,7 +30,7 @@ function ProfilePage(props) {
                 setProfileInfo(props.userInfo); // user info stores all private info
             } else {
                 setPageMode("viewer");
-                setProfileInfo(await API.getPublicUserInfo(profileUsername).then((response) => response.json()));
+                setProfileInfo(await API.getUserInfo(profileUsername).then((response) => response.json()));
                 setGeneralStatusMsg("No user found"); // will only show if profile info is null
             }
             setPageMode(props.userInfo.username === profileUsername ? "owner" : "viewer");
@@ -103,7 +104,10 @@ function ProfilePage(props) {
                                 {
                                     pageMode === "owner" ? 
                                     <SuggestedProblemCard 
-                                        profileInfo={profileInfo}
+                                        userInfo={props.userInfo}
+                                        userInfoSetter={props.userInfoSetter}
+                                        JWT={props.JWT}
+                                        JWTSetter={props.JWTSetter}
                                     /> :
                                     <></>
                                 }
@@ -134,8 +138,6 @@ function ProfilePage(props) {
                             </>
                         )}
                     </div>
-
-                    {JSON.stringify(profileInfo)}
                 </div>
             )}
         </>

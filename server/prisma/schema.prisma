@@ -30,14 +30,14 @@ model Problem {
 model User {
     username                    String                  @id @unique
     handle                      String?                 @unique
-    estimatedRating             Int                     @default(1000)
+    estimatedRating             Int                     @default(-1)
     submissions                 Submission[]
     problemStatuses             UserProblemStatus[]
     problemsAC                  Int                     @default(0)
     totalSubmissions            Int                     @default(0)
     totalAC                     Int                     @default(0)
-    problemTags                 Json                    @default("{}")
-    problemsDifficulty          Json                    @default("{}")
+    tagsFrequency               Json                    @default("{}")
+    tagsDifficulty              Json                    @default("{}")
     assignedProblem             Problem?                @relation(fields: [assignedProblemId], references: [id])
     assignedProblemId           String?
     recentSubmissions           Int[]
@@ -69,6 +69,7 @@ model UserProblemStatus {
     submissions                 Int                     @default(0)
     AC                          Int                     @default(0)
     lastAttempted               DateTime                
+    userDifficultyRating        Int                     @default(-1)
 
     @@unique([username, problemId])
 }

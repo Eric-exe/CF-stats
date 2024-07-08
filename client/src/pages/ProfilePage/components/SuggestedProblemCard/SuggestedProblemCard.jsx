@@ -2,8 +2,11 @@ import RecentProblemsRater from "./components/RecentProblemsRater";
 import propTypes from "prop-types";
 
 SuggestedProblemCard.propTypes = {
-    profileInfo: propTypes.object.isRequired
-}
+    userInfo: propTypes.object.isRequired,
+    userInfoSetter: propTypes.func.isRequired,
+    JWT: propTypes.string.isRequired,
+    JWTSetter: propTypes.func.isRequired,
+};
 
 const PROBLEM_TAGS = [
     "dfs and similar",
@@ -41,8 +44,8 @@ const PROBLEM_TAGS = [
     "graph matchings",
     "schedules",
     "expression parsing",
-    "chinese remainder theorem"
-]
+    "chinese remainder theorem",
+];
 
 function SuggestedProblemCard(props) {
     return (
@@ -53,9 +56,12 @@ function SuggestedProblemCard(props) {
             <div className="collapse show" id="suggested-problem-body">
                 <div className="container-fluid">
                     <div className="card-body">
-                        
-
-                        <RecentProblemsRater problemStatuses={props.profileInfo.problemStatuses}/>
+                        <RecentProblemsRater
+                            userInfo={props.userInfo}
+                            userInfoSetter={props.userInfoSetter}
+                            JWT={props.JWT}
+                            JWTSetter={props.JWTSetter}
+                        />
                     </div>
                 </div>
             </div>

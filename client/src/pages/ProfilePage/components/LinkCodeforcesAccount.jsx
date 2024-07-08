@@ -17,7 +17,7 @@ function LinkCodeforcesAccount(props) {
 
     const genKey = async () => {
         const data = await API.getCFLinkKey(props.JWT).then((response) => response.json());
-        if (Object.prototype.hasOwnProperty.call(data, "error")) {
+        if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
             setStatus(data.error);
             setKey("N/A");
         }
@@ -28,7 +28,7 @@ function LinkCodeforcesAccount(props) {
 
     const handleCFLink = async () => {
         const data = await API.linkCF(potentialHandle, props.JWT).then((response) => response.json());
-        if (Object.prototype.hasOwnProperty.call(data, "error")) {
+        if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
             // linking failed
             setStatus(data.error);
             setStatusIsGood(false);
@@ -42,7 +42,7 @@ function LinkCodeforcesAccount(props) {
 
             props.profileIsUpdatingSetter(true);
             await API.updateUserInfo(props.profileUsername);
-            await API.getPersonalUserInfo(props.JWT)
+            await API.getUserInfo(props.profileUsername)
                 .then((response) => response.json())
                 .then((data) => {props.profileInfoSetter(data); props.userInfoSetter(data)});
             props.profileIsUpdatingSetter(false);

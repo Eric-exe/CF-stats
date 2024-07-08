@@ -1,11 +1,30 @@
 import "./RecentProblemsRater.css";
+import API from "../../../../../api";
 import propTypes from "prop-types";
 
 RecentProblemsRater.propTypes = {
-    problemStatuses: propTypes.array.isRequired,
+    userInfo: propTypes.object.isRequired,
+    userInfoSetter: propTypes.func.isRequired,
+    JWT: propTypes.string.isRequired,
+    JWTSetter: propTypes.func.isRequired,
 };
 
 function RecentProblemsRater(props) {
+    const handleRatingChange = async (event, problemId) => {
+        try {
+            const data = await API.updateDifficultyRating(props.JWT, problemId, event.target.value).then((response) => response.json());
+            console.log(data);
+            if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
+                props.JWTSetter("");
+            }
+            else {
+                props.userInfoSetter(data);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     return (
         <div>
             <div className="accordion" id="recent-problems-accordion">
@@ -24,6 +43,13 @@ function RecentProblemsRater(props) {
                     <div id="recent-problems-rater" className="accordion-collapse collapse" data-bs-parent="#recent-problems-accordion">
                         <div className="accordion-body">
                             Rate the difficulty of the problems you recently attempted for better suggested problems!
+                            <br />
+                            <b>1 = easy, 5 = difficult</b>
+                            <br />
+                            <br />
+                            Recommended to come back and rate the problem after you AC or give up!
+                            <br />
+                            Note: Problems you haven&apos;t rated are rated based on # of submissions before first AC.
                             <div className="table-responsive" style={{ maxHeight: "45vh" }}>
                                 <table className="table table-striped mt-3">
                                     <thead>
@@ -41,7 +67,7 @@ function RecentProblemsRater(props) {
                                     </thead>
 
                                     <tbody className="table-group-divider" style={{ maxHeight: "45vh" }}>
-                                        {props.problemStatuses.map((problemStatus, index) => (
+                                        {props.userInfo.problemStatuses.map((problemStatus, index) => (
                                             <tr key={index}>
                                                 <td>{problemStatus.problem.contestId}</td>
                                                 <td>{problemStatus.problem.index}</td>
@@ -69,6 +95,7 @@ function RecentProblemsRater(props) {
 
                                                 <td>
                                                     <div className="d-flex align-items-center">
+                                                        1&nbsp;
                                                         <input
                                                             type="range"
                                                             className="form-range rating-slider"
@@ -76,8 +103,10 @@ function RecentProblemsRater(props) {
                                                             max="5"
                                                             step="1"
                                                             id="range"
-                                                            defaultValue="3"
+                                                            defaultValue={problemStatus.userDifficultyRating}
+                                                            onChange={(event) => handleRatingChange(event, problemStatus.problem.id)}
                                                         />
+                                                        &nbsp;5
                                                     </div>
                                                 </td>
                                             </tr>

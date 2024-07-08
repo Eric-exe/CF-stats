@@ -20,7 +20,7 @@ const USER_INCLUDES = {
 const KEYGEN_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 const KEY_LEN = 30;
 
-const DEFAULT_RATING = 1000;
+const DEFAULT_RATING = 800;
 
 // takes in GitHub code from OAuth and generates a JWT based on github username
 router.post("/createJWT", async (req, res) => {
@@ -59,27 +59,23 @@ router.post("/createJWT", async (req, res) => {
 });
 
 // personal info forces an entry to be created if entry doesn't exist.
-router.get("/personalInfo", authenticateJWT, async (req, res) => {
+router.get("/getOrCreateInfo", authenticateJWT, async (req, res) => {
     let userInfo = await prisma.User.upsert({
         where: { username: req.user.username },
         create: { username: req.user.username },
         update: {},
         include: USER_INCLUDES,
     });
-    userInfo["state"] = "personal";
 
     return res.json(userInfo);
 });
 
-router.post("/publicInfo", async (req, res) => {
+router.post("/info", async (req, res) => {
     let username = req.body.username || "";
     let userInfo = await prisma.User.findUnique({
         where: { username },
         include: USER_INCLUDES
     });
-    if (userInfo !== null) {
-        userInfo["state"] = "public";
-    }
     return res.json(userInfo);
 });
 
@@ -137,7 +133,7 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
         data: {
             handle: req.body.handle,
             cfLinkKey: "",
-            estimatedRating: data.result[0].rating || DEFAULT_RATING,
+            estimatedRating: Math.max(data.result[0].rating, 800) || DEFAULT_RATING,
         }
     });
     
@@ -155,6 +151,39 @@ router.post("/updateInfo", async (req, res) => {
     }
 })
 
+router.post("/updateDifficultyRating", authenticateJWT, async (req, res) => {
+    try {
+        const oldUserInfo = await prisma.User.findUnique({
+            where: { username : req.user.username }
+        });
+        const oldProblemStatus = await prisma.userProblemStatus.findUnique({
+            where: { username_problemId: { username: req.user.username, problemId: req.body.problemId }},
+            include: { problem: true }
+        });
+        
+        await prisma.userProblemStatus.update({
+            where: { username_problemId: { username: req.user.username, problemId: req.body.problemId }},
+            data: { userDifficultyRating: parseInt(req.body.newDifficultyRating) }
+        });
+
+        const newTagsDifficulty = oldUserInfo.tagsDifficulty;
+        const difficultyRatingDelta = req.body.newDifficultyRating - oldProblemStatus.userDifficultyRating;
+        for (const tag of oldProblemStatus.problem.tags) {
+            newTagsDifficulty[tag] += difficultyRatingDelta;
+        }
+
+        const updatedUserInfo = await prisma.User.update({
+            where: { username: req.user.username },
+            data: { tagsDifficulty: newTagsDifficulty },
+            include: USER_INCLUDES
+        })
+
+        return res.json(updatedUserInfo);
+    } catch (error) {
+        console.error("[Error updating difficulty rating]: ", error);
+    }
+});
+
 // TESTING STUFF (IGNORE)
 router.get("/test", async (req, res) => {
     CodeforcesAPI.updateProblems();
@@ -162,7 +191,7 @@ router.get("/test", async (req, res) => {
 });
 
 router.get("/test2", async (req, res) => {
-    CodeforcesAPI.updateUserStats("Eric-exe");
+    CodeforcesAPI.updateUserStats("AAA");
     return res.json({});
 })
 
