@@ -4,7 +4,8 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
 const authenticateJWT = require("./authenticateJWT");
-const CodeforcesAPI = require("../CodeforcesAPI");
+const CodeforcesAPI = require("../core/CodeforcesAPI");
+const Data = require("../core/data");
 
 const USER_INCLUDES = {
     problemStatuses: {
@@ -58,7 +59,6 @@ router.post("/createJWT", async (req, res) => {
     return res.json({ encoded: jwt.sign({ username }, process.env.JWT_SECRET_KEY, { expiresIn: "7d" }) });
 });
 
-// personal info forces an entry to be created if entry doesn't exist.
 router.get("/getOrCreateInfo", authenticateJWT, async (req, res) => {
     let userInfo = await prisma.User.upsert({
         where: { username: req.user.username },
@@ -111,7 +111,7 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
 
     let data = {};
     try {
-        data = await CodeforcesAPI.getUserInfo(req.body.handle);
+        data = await CodeforcesAPI.fetchUserInfo(req.body.handle);
         if (data.status === "FAILED") {
             return res.status(403).json({"error": "No user with handle found"});
         }
@@ -133,6 +133,7 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
         data: {
             handle: req.body.handle,
             cfLinkKey: "",
+            rating: data.result[0].rating || -1,
             estimatedRating: Math.max(data.result[0].rating, 800) || DEFAULT_RATING,
         }
     });
@@ -142,7 +143,9 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
 
 router.post("/updateInfo", async (req, res) => {
     try {
-        await CodeforcesAPI.updateUserStats(req.body.username);
+        console.log(req.body.username);
+        await CodeforcesAPI.fetchUserData(req.body.username);
+        await Data.processUserData(req.body.username);
         return res.status(200).json({ "status": "OK" });
     }
     catch (error) {
@@ -186,12 +189,13 @@ router.post("/updateDifficultyRating", authenticateJWT, async (req, res) => {
 
 // TESTING STUFF (IGNORE)
 router.get("/test", async (req, res) => {
-    CodeforcesAPI.updateProblems();
+    await CodeforcesAPI.fetchProblemsData();
+    await Data.processProblemsData();
     return res.json({});
 });
 
 router.get("/test2", async (req, res) => {
-    CodeforcesAPI.updateUserStats("AAA");
+    CodeforcesAPI.fetchUserData("Eric-exe");
     return res.json({});
 })
 

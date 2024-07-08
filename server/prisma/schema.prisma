@@ -13,6 +13,14 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+model Metadata {
+    id                          Int                     @id @default(autoincrement())
+    key                         String                  @unique
+    problemsRatingSpread        Json                    @default("{}")
+    problemsTagsSpread          Json                    @default("{}")
+    problemsLastUpdated         DateTime                @default("1970-01-01T00:00:00.000Z")
+}
+
 model Problem {
     id                          String                  @id @unique
     contestId                   Int
@@ -30,6 +38,7 @@ model Problem {
 model User {
     username                    String                  @id @unique
     handle                      String?                 @unique
+    rating                      Int                     @default(-1)
     estimatedRating             Int                     @default(-1)
     submissions                 Submission[]
     problemStatuses             UserProblemStatus[]

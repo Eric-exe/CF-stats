@@ -10,7 +10,7 @@ import SubmissionsStatsCard from "./components/SubmissionsStatsCard";
 
 ProfilePage.propTypes = {
     userInfo: propTypes.object.isRequired,
-    userInfoSetter: propTypes.func.isRequired, 
+    userInfoSetter: propTypes.func.isRequired,
     JWT: propTypes.string.isRequired,
     JWTSetter: propTypes.func.isRequired,
 };
@@ -45,16 +45,16 @@ function ProfilePage(props) {
             ) : (
                 <div className="profile-page row justify-content-center container-fluid">
                     <div className="col-12">
-                            {profileIsUpdating ? (
-                                <div className="d-flex justify-content-center align-items-center mt-4">
-                                    <div className="spinner-border" role="status">
-                                        <span className="sr-only"/>
-                                    </div>
-                                    &nbsp;Updating user info...
+                        {profileIsUpdating ? (
+                            <div className="d-flex justify-content-center align-items-center mt-4">
+                                <div className="spinner-border" role="status">
+                                    <span className="sr-only" />
                                 </div>
-                            ) : (
-                                <></>
-                            )}
+                                &nbsp;Updating user info...
+                            </div>
+                        ) : (
+                            <></>
+                        )}
                         {/* General user stat bar */}
                         <div className="card card-body shadow m-4 overflow-auto">
                             <div className="row">
@@ -81,7 +81,9 @@ function ProfilePage(props) {
                                 </div>
                                 <div className="d-flex col-lg-3 flex-wrap my-auto">
                                     <b className="text-nowrap">Estimated Rating:&nbsp;</b>
-                                    {profileInfo.handle === null ? "" : profileInfo.estimatedRating}
+                                    {profileInfo.handle === null
+                                        ? ""
+                                        : String(profileInfo.estimatedRating) + " (" + String(profileInfo.rating) + ")"}
                                 </div>
                                 <div className="d-flex col-lg-3 justify-content-between">
                                     <div className="d-flex my-auto flex-wrap">
@@ -101,16 +103,16 @@ function ProfilePage(props) {
                             <p className="text-center">User has not linked their Codeforces account</p>
                         ) : (
                             <>
-                                {
-                                    pageMode === "owner" ? 
-                                    <SuggestedProblemCard 
+                                {pageMode === "owner" ? (
+                                    <SuggestedProblemCard
                                         userInfo={props.userInfo}
                                         userInfoSetter={props.userInfoSetter}
                                         JWT={props.JWT}
                                         JWTSetter={props.JWTSetter}
-                                    /> :
+                                    />
+                                ) : (
                                     <></>
-                                }
+                                )}
 
                                 <ProblemStatsCard profileInfo={profileInfo} />
 
