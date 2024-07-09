@@ -214,8 +214,6 @@ router.post("/generateSuggestedProblem", authenticateJWT, async (req, res) => {
         ? ratingStart + 300 
         : Math.floor(req.body.ratingEnd / 100) * 100;
 
-    console.log(req.body.ratingStart, req.body.ratingEnd, req.body.tags);
-
     const problem = await Data.generateSuggestedProblem(
         req.user.username,
         ratingStart,
@@ -225,7 +223,7 @@ router.post("/generateSuggestedProblem", authenticateJWT, async (req, res) => {
 
     const updatedUserInfo = await prisma.User.update({
         where: { username: req.user.username },
-        data: { assignedProblemId: problem.id },
+        data: { assignedProblemId: problem ? problem.id : null },
         include: USER_INCLUDES,
     });
 

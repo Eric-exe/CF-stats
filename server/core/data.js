@@ -215,6 +215,9 @@ class Data {
         let problemsProbability = {};
         let sum = 0;
         for (let rating = ratingStart; rating <= ratingEnd; rating += 100) {
+            if (!metadata.problemsTagsSpread[rating]) {
+                continue;
+            }
             for (const tag of Object.keys(metadata.problemsTagsSpread[rating])) {
                 if (tagsChosen.length !== 0 && !tagsChosen.includes(tag)) {
                     continue;

@@ -1,3 +1,5 @@
+import { useState } from "react";
+import Filter from "../../../../../components/Filter";
 import API from "../../../../../api";
 import propTypes from "prop-types";
 
@@ -5,16 +7,25 @@ SuggestedProblem.propTypes = {
     userInfo: propTypes.object.isRequired,
     userInfoSetter: propTypes.func.isRequired,
     JWT: propTypes.string.isRequired,
-    JWTSetter: propTypes.func.isRequired, 
+    JWTSetter: propTypes.func.isRequired,
 };
 
 function SuggestedProblem(props) {
+    const [ratingStart, setRatingStart] = useState("");
+    const [ratingEnd, setRatingEnd] = useState("");
+    const [tags, setTags] = useState([]);
+
     const handleChangeProblemClick = async () => {
-        const data = await API.generatedSuggestedProblem(props.JWT, -1, -1, []).then(response => response.json());
+        const data = await API.generatedSuggestedProblem(
+            props.JWT,
+            ratingStart === "" ? -1 : ratingStart,
+            ratingEnd === "" ? -1 : ratingEnd,
+            tags
+        ).then((response) => response.json());
+
         if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
             props.JWTSetter("");
-        }
-        else {
+        } else {
             props.userInfoSetter(data);
         }
     };
@@ -22,7 +33,15 @@ function SuggestedProblem(props) {
     return (
         <div className="card mb-3">
             <div className="card-body">
-                <div className="d-flex align-items-center overflow-auto">
+                <Filter
+                    ratingStart={ratingStart}
+                    ratingStartSetter={setRatingStart}
+                    ratingEnd={ratingEnd}
+                    ratingEndSetter={setRatingEnd}
+                    tagsSetter={setTags}
+                />
+                <hr />
+                <div className="d-flex align-items-center overflow-auto mt-3">
                     <div className="me-4">Current Problem:</div>
                     <div className="row align-items-center flex-grow-1 flex-nowrap">
                         {props.userInfo.assignedProblemId !== null ? (
@@ -41,7 +60,9 @@ function SuggestedProblem(props) {
                             <div className="col-10">No problem found. Remove some of the filters.</div>
                         )}
                         <div className="col-2 d-flex justify-content-end">
-                            <button className="btn btn-sm btn-outline-dark" onClick={handleChangeProblemClick}>Change Problem</button>
+                            <button className="btn btn-sm btn-outline-dark" onClick={handleChangeProblemClick}>
+                                Change Problem
+                            </button>
                         </div>
                     </div>
                 </div>
