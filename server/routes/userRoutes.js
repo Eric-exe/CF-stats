@@ -4,17 +4,24 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
 const authenticateJWT = require("./authenticateJWT");
-const CodeforcesAPI = require("../CodeforcesAPI");
+const CodeforcesAPI = require("../core/CodeforcesAPI");
+const Data = require("../core/data");
 
 const USER_INCLUDES = {
-    problems: true, 
-    submissions: { include: { problem: true } },
+    problemStatuses: {
+        include: { problem: true },
+        orderBy: { lastAttempted: "desc" }
+    }, 
+    submissions: { 
+        include: { problem: true },
+        orderBy: { timeCreated: "desc" }
+    },
 };
 
 const KEYGEN_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 const KEY_LEN = 30;
 
-const DEFAULT_RATING = 1000;
+const DEFAULT_RATING = 800;
 
 // takes in GitHub code from OAuth and generates a JWT based on github username
 router.post("/createJWT", async (req, res) => {
@@ -52,28 +59,23 @@ router.post("/createJWT", async (req, res) => {
     return res.json({ encoded: jwt.sign({ username }, process.env.JWT_SECRET_KEY, { expiresIn: "7d" }) });
 });
 
-// personal info forces an entry to be created if entry doesn't exist.
-router.get("/personalInfo", authenticateJWT, async (req, res) => {
+router.get("/getOrCreateInfo", authenticateJWT, async (req, res) => {
     let userInfo = await prisma.User.upsert({
         where: { username: req.user.username },
         create: { username: req.user.username },
         update: {},
         include: USER_INCLUDES,
     });
-    userInfo["state"] = "personal";
 
     return res.json(userInfo);
 });
 
-router.post("/publicInfo", async (req, res) => {
+router.post("/info", async (req, res) => {
     let username = req.body.username || "";
     let userInfo = await prisma.User.findUnique({
         where: { username },
         include: USER_INCLUDES
     });
-    if (userInfo !== null) {
-        userInfo["state"] = "public";
-    }
     return res.json(userInfo);
 });
 
@@ -97,7 +99,7 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
         where: { username: req.user.username }
     });
     if (potentialUserHasHandle.handle !== null) {
-        return res.status(403).json({"error": "User already linked to a handle"});
+        return res.status(403).json({"error": "User already linked to a handle. Refresh the page."});
     }
     // check if handle is already linked
     const potentialUserWithHandle = await prisma.User.findUnique({
@@ -109,7 +111,7 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
 
     let data = {};
     try {
-        data = await CodeforcesAPI.getUserInfo(req.body.handle);
+        data = await CodeforcesAPI.fetchUserInfo(req.body.handle);
         if (data.status === "FAILED") {
             return res.status(403).json({"error": "No user with handle found"});
         }
@@ -131,7 +133,8 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
         data: {
             handle: req.body.handle,
             cfLinkKey: "",
-            estimatedRating: data.result[0].rating || DEFAULT_RATING,
+            rating: data.result[0].rating || 0,
+            estimatedRating: data.result[0].rating || 0,
         }
     });
     
@@ -140,7 +143,19 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
 
 router.post("/updateInfo", async (req, res) => {
     try {
-        await CodeforcesAPI.updateUserStats(req.body.username);
+        await Data.updateUserData(req.body.username);
+
+        const user = await prisma.User.findUnique({
+            where: { username: req.body.username }
+        });
+
+        await prisma.User.update({
+            where: { username: req.body.username },
+            data: { 
+                estimatedRating: await Data.calculateEstimatedRating(req.body.username, user.rating),
+            }
+        });
+
         return res.status(200).json({ "status": "OK" });
     }
     catch (error) {
@@ -149,14 +164,54 @@ router.post("/updateInfo", async (req, res) => {
     }
 })
 
+router.post("/updateDifficultyRating", authenticateJWT, async (req, res) => {
+    try {
+        const oldUserInfo = await prisma.User.findUnique({
+            where: { username : req.user.username }
+        });
+        const oldProblemStatus = await prisma.userProblemStatus.findUnique({
+            where: { username_problemId: { username: req.user.username, problemId: req.body.problemId }},
+            include: { problem: true }
+        });
+        
+        await prisma.userProblemStatus.update({
+            where: { username_problemId: { username: req.user.username, problemId: req.body.problemId }},
+            data: { userDifficultyRating: parseInt(req.body.newDifficultyRating) }
+        });
+
+        const newTagsDifficulty = oldUserInfo.tagsDifficulty;
+        const difficultyRatingDelta = req.body.newDifficultyRating - oldProblemStatus.userDifficultyRating;
+        for (const tag of oldProblemStatus.problem.tags) {
+            newTagsDifficulty[tag] += difficultyRatingDelta;
+        }
+
+        const user = await prisma.User.findUnique({
+            where: { username: req.user.username }
+        });
+
+        const updatedUserInfo = await prisma.User.update({
+            where: { username: req.user.username },
+            data: { 
+                tagsDifficulty: newTagsDifficulty,
+                estimatedRating: await Data.calculateEstimatedRating(req.body.username, user.rating)
+            },
+            include: USER_INCLUDES
+        })
+
+        return res.json(updatedUserInfo);
+    } catch (error) {
+        console.error("[Error updating difficulty rating]: ", error);
+    }
+});
+
 // TESTING STUFF (IGNORE)
 router.get("/test", async (req, res) => {
-    CodeforcesAPI.updateProblems();
+    await Data.updateProblemsData();
     return res.json({});
 });
 
 router.get("/test2", async (req, res) => {
-    CodeforcesAPI.updateUserStats("Eric-exe");
+    Data.updateUserData("Eric-exe");
     return res.json({});
 })
 

@@ -3,38 +3,40 @@ import { useParams } from "react-router-dom";
 import propTypes from "prop-types";
 import API from "../../api";
 import LinkCodeforcesAccount from "./components/LinkCodeforcesAccount";
-import SuggestedProblemCard from "./components/SuggestedProblemCard";
+import SuggestedProblemCard from "./components/SuggestedProblemCard/SuggestedProblemCard";
 import ProblemStatsCard from "./components/ProblemStatsCard";
 import ActivityGraphStatsCard from "./components/ActivityGraphStatsCard";
 import SubmissionsStatsCard from "./components/SubmissionsStatsCard";
 
 ProfilePage.propTypes = {
     userInfo: propTypes.object.isRequired,
+    userInfoSetter: propTypes.func.isRequired,
     JWT: propTypes.string.isRequired,
+    JWTSetter: propTypes.func.isRequired,
 };
 
 function ProfilePage(props) {
     const { profileUsername } = useParams();
-    const [mode, setMode] = useState("viewer");
+    const [pageMode, setPageMode] = useState("viewer");
     const [profileInfo, setProfileInfo] = useState(null);
     const [generalStatusMsg, setGeneralStatusMsg] = useState("Loading...");
     const [profileIsUpdating, setProfileIsUpdating] = useState(false);
 
-    // update modes when username is updated
+    // update modes whenever user is updated
     useEffect(() => {
         const updateProfileInfo = async () => {
             if (props.userInfo.username === profileUsername) {
-                // setMode("owner");
+                setPageMode("owner");
                 setProfileInfo(props.userInfo); // user info stores all private info
             } else {
-                setMode("viewer");
-                setProfileInfo(await API.getPublicUserInfo(profileUsername).then((response) => response.json()));
+                setPageMode("viewer");
+                setProfileInfo(await API.getUserInfo(profileUsername).then((response) => response.json()));
                 setGeneralStatusMsg("No user found"); // will only show if profile info is null
             }
-            setMode(props.userInfo.username === profileUsername ? "owner" : "viewer");
+            setPageMode(props.userInfo.username === profileUsername ? "owner" : "viewer");
         };
         updateProfileInfo();
-    }, [props.userInfo.username, profileUsername]);
+    }, [profileUsername, props.userInfo]);
 
     return (
         <>
@@ -43,16 +45,16 @@ function ProfilePage(props) {
             ) : (
                 <div className="profile-page row justify-content-center container-fluid">
                     <div className="col-12">
-                            {profileIsUpdating ? (
-                                <div className="d-flex justify-content-center align-items-center mt-4">
-                                    <div className="spinner-border" role="status">
-                                        <span className="sr-only"/>
-                                    </div>
-                                    &nbsp;Updating user info...
+                        {profileIsUpdating ? (
+                            <div className="d-flex justify-content-center align-items-center mt-4">
+                                <div className="spinner-border" role="status">
+                                    <span className="sr-only" />
                                 </div>
-                            ) : (
-                                <></>
-                            )}
+                                &nbsp;Updating user info...
+                            </div>
+                        ) : (
+                            <></>
+                        )}
                         {/* General user stat bar */}
                         <div className="card card-body shadow m-4 overflow-auto">
                             <div className="row">
@@ -65,10 +67,11 @@ function ProfilePage(props) {
                                     <b className="text-nowrap my-auto">Codeforces Handle:&nbsp;</b>
                                     {profileInfo.handle !== null ? (
                                         <>{profileInfo.handle}</>
-                                    ) : mode == "owner" ? (
+                                    ) : pageMode == "owner" ? (
                                         <LinkCodeforcesAccount
                                             profileUsername={profileUsername}
                                             JWT={props.JWT}
+                                            userInfoSetter={props.userInfoSetter}
                                             profileInfoSetter={setProfileInfo}
                                             profileIsUpdatingSetter={setProfileIsUpdating}
                                         />
@@ -78,7 +81,9 @@ function ProfilePage(props) {
                                 </div>
                                 <div className="d-flex col-lg-3 flex-wrap my-auto">
                                     <b className="text-nowrap">Estimated Rating:&nbsp;</b>
-                                    {profileInfo.handle === null ? "" : profileInfo.estimatedRating}
+                                    {profileInfo.handle === null
+                                        ? ""
+                                        : String(profileInfo.estimatedRating) + " (" + String(profileInfo.rating) + ")"}
                                 </div>
                                 <div className="d-flex col-lg-3 justify-content-between">
                                     <div className="d-flex my-auto flex-wrap">
@@ -98,7 +103,16 @@ function ProfilePage(props) {
                             <p className="text-center">User has not linked their Codeforces account</p>
                         ) : (
                             <>
-                                <SuggestedProblemCard />
+                                {pageMode === "owner" ? (
+                                    <SuggestedProblemCard
+                                        userInfo={props.userInfo}
+                                        userInfoSetter={props.userInfoSetter}
+                                        JWT={props.JWT}
+                                        JWTSetter={props.JWTSetter}
+                                    />
+                                ) : (
+                                    <></>
+                                )}
 
                                 <ProblemStatsCard profileInfo={profileInfo} />
 
@@ -126,8 +140,6 @@ function ProfilePage(props) {
                             </>
                         )}
                     </div>
-
-                    {JSON.stringify(profileInfo)}
                 </div>
             )}
         </>

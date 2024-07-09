@@ -5,6 +5,7 @@ import propTypes from "prop-types";
 LinkCodeforcesAccount.propTypes = {
     profileUsername: propTypes.string.isRequired,
     JWT: propTypes.string.isRequired,
+    userInfoSetter: propTypes.func.isRequired,
     profileInfoSetter: propTypes.func.isRequired,
     profileIsUpdatingSetter: propTypes.func.isRequired,
 };
@@ -16,12 +17,18 @@ function LinkCodeforcesAccount(props) {
 
     const genKey = async () => {
         const data = await API.getCFLinkKey(props.JWT).then((response) => response.json());
-        setKey(data["key"]);
+        if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
+            setStatus(data.error);
+            setKey("N/A");
+        }
+        else {
+            setKey(data["key"]);
+        }
     };
 
     const handleCFLink = async () => {
         const data = await API.linkCF(potentialHandle, props.JWT).then((response) => response.json());
-        if (Object.prototype.hasOwnProperty.call(data, "error")) {
+        if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
             // linking failed
             setStatus(data.error);
             setStatusIsGood(false);
@@ -34,13 +41,10 @@ function LinkCodeforcesAccount(props) {
             setPotentialHandle("");
 
             props.profileIsUpdatingSetter(true);
-            console.log("HEY");
             await API.updateUserInfo(props.profileUsername);
-            console.log("WHA");
-            await API.getPersonalUserInfo(props.JWT)
+            await API.getUserInfo(props.profileUsername)
                 .then((response) => response.json())
-                .then((data) => props.profileInfoSetter(data));
-            console.log("OH");
+                .then((data) => {props.profileInfoSetter(data); props.userInfoSetter(data)});
             props.profileIsUpdatingSetter(false);
         }
     };
@@ -87,7 +91,7 @@ function LinkCodeforcesAccount(props) {
                                     </div>
                                     <div className="row mb-4">
                                         <div className="col-3 my-auto">Key:</div>
-                                        <div className="col-9 my-auto">{key}</div>
+                                        <div className="col-9 my-auto user-select-all">{key}</div>
                                     </div>
                                     To link your Codeforces account:
                                     <ol>

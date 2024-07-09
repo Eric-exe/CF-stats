@@ -11,23 +11,18 @@ class CodeforcesAPI {
         });
     }
 
-    static async updateUserStats(username) {
+    static async fetchUserData(username) {
         const user = await prisma.User.findUnique({ where: { username } });
         if (!user || !user.handle) {
             return console.error("No valid user or user handle");
         }
         let data = {};
         try {
-            data = await this.get(`https://codeforces.com/api/user.status?handle=${user.handle}`).then(response => response.json());
-        }
-        catch (error) {
+            data = await this.get(`https://codeforces.com/api/user.status?handle=${user.handle}`).then((response) => response.json());
+        } catch (error) {
             return console.error("[Failed to fetch user stats: ", error);
         }
-        await this.processUserSubmissions(data, username);
-        await this.processUserStats(username, user.handle);
-    }
 
-    static async processUserSubmissions(data, username) {
         for (const submission of data.result) {
             // check if submission exists, if it does, that means everything after it also exists
             const existingSubmission = await prisma.Submission.findUnique({
@@ -59,7 +54,7 @@ class CodeforcesAPI {
 
             // Update the user's problem status
             try {
-                // create a status if it doesn't exist
+                // create a status if it doesn't exist and update submission + AC count
                 await prisma.UserProblemStatus.upsert({
                     where: {
                         username_problemId: { username, problemId },
@@ -67,17 +62,13 @@ class CodeforcesAPI {
                     create: {
                         user: { connect: { username } },
                         problem: { connect: { id: problemId } },
+                        lastAttempted: new Date(submission.creationTimeSeconds * 1000),
+                        submissions: 1,
+                        AC: submission.verdict === "OK" ? 1 : 0,
                     },
-                    update: {},
-                });
-
-                await prisma.UserProblemStatus.update({
-                    where: {
-                        username_problemId: { username, problemId },
-                    },
-                    data: {
+                    update: {
                         submissions: { increment: 1 },
-                        AC: { increment: submission.verdict === "OK" ? 1 : 0, },
+                        AC: { increment: submission.verdict === "OK" ? 1 : 0 },
                     },
                 });
             } catch (error) {
@@ -86,75 +77,7 @@ class CodeforcesAPI {
         }
     }
 
-    static async processUserStats(username) {
-        // count problems AC'ed
-        const totalProblemsAC = await prisma.UserProblemStatus.count({
-            where: {
-                username,
-                AC: { gt: 0 },
-            },
-        });
-
-        // count submission + AC for AC rate, and avg for average elo of problem solved
-        const totalSubmissionsAndAC = await prisma.UserProblemStatus.aggregate({
-            where: { username },
-            _sum: {
-                submissions: true,
-                AC: true,
-            },
-        });
-
-        // count the frequency of a question tag, along with total rating
-        const problemStatuses = await prisma.UserProblemStatus.findMany({
-            where: { username },
-            include: { problem: true }
-        });
-
-        const tagFrequency = {};
-        for (const problemStatus of problemStatuses) {
-            if (problemStatus.AC == 0) {
-                continue;
-            }
-            for (const tag of problemStatus.problem.tags) {
-                if (!tagFrequency[tag]) {
-                    tagFrequency[tag] = 0;
-                }
-                tagFrequency[tag]++;
-            }
-        }
-
-        // count the number of submissions and AC over the last 60 days
-        const past60DaySubmissions = Array(60).fill(0), past60DayAC = Array(60).fill(0);
-        const sortedSubmissions = await prisma.Submission.findMany({
-            where: { authorUsername: username },
-            orderBy: { timeCreated: "desc" }
-        });
-
-        const timeNow = new Date();
-        for (const submission of sortedSubmissions) {
-            const dayDiff = Math.floor((timeNow - new Date(submission.timeCreated)) / (1000 * 60 * 60 * 24));
-            if (dayDiff < 60) {
-                past60DaySubmissions[dayDiff]++;
-                if (submission.verdict === "OK") {
-                    past60DayAC[dayDiff]++;
-                }
-            } 
-        }
-
-        await prisma.User.update({
-            where: { username },
-            data: {
-                problemsAC: totalProblemsAC,
-                totalSubmissions: totalSubmissionsAndAC._sum.submissions,
-                totalAC: totalSubmissionsAndAC._sum.AC,
-                problemTags: tagFrequency,
-                recentSubmissions: past60DaySubmissions,
-                recentAC: past60DayAC,
-            },
-        });
-    }
-
-    static async updateProblems() {
+    static async fetchProblemsData() {
         try {
             const data = await this.get("https://codeforces.com/api/problemset.problems").then((response) => response.json());
             if (data.status != "OK") {
@@ -171,7 +94,7 @@ class CodeforcesAPI {
                     });
 
                     if (existingProblem !== null) {
-                        break;
+                        continue;
                     }
 
                     await prisma.Problem.create({
@@ -193,15 +116,15 @@ class CodeforcesAPI {
         }
     }
 
-    static async getUserInfo(handle) {
+    // not the same as user data as this stores general user info like name, not submissions
+    static async fetchUserInfo(handle) {
         try {
-            const data = await this.get(`https://codeforces.com/api/user.info?handles=${handle}`).then(response => response.json());
+            const data = await this.get(`https://codeforces.com/api/user.info?handles=${handle}`).then((response) => response.json());
             return data;
-        }
-        catch (error) {
+        } catch (error) {
             throw new Error("Failed to fetch user info");
         }
     }
-} 
+}
 
 module.exports = CodeforcesAPI;

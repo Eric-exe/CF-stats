@@ -6,7 +6,7 @@ function authenticateJWT(req, res, next) {
     const token = authHeader && authHeader.split(" ")[1];
 
     if (token == null) {
-        return res.status(401).json({ error: "No token" });
+        return res.status(401).json({ "JWT Error": "No token" });
     }
 
     try {
@@ -14,7 +14,7 @@ function authenticateJWT(req, res, next) {
         req["user"] = decoded;
         next();
     } catch (error) {
-        return res.status(403).json({ error: "Bad token" });
+        return res.status(403).json({ "JWT Error": "Bad token, refresh and re-login" });
     }   
 }
 
