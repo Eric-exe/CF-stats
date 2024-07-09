@@ -40,6 +40,7 @@ function SuggestedProblem(props) {
                     ratingEndSetter={setRatingEnd}
                     tagsSetter={setTags}
                 />
+                Note: By default, you will be suggested slightly harder problems than your current estimated rating.
                 <hr />
                 <div className="d-flex align-items-center overflow-auto mt-3">
                     <div className="me-4">Current Problem:</div>
@@ -57,7 +58,7 @@ function SuggestedProblem(props) {
                                 </div>
                             </>
                         ) : (
-                            <div className="col-10">No problem found. Remove some of the filters.</div>
+                            <div className="col-10">No problem found. Change or remove some of the filters.</div>
                         )}
                         <div className="col-2 d-flex justify-content-end">
                             <button className="btn btn-sm btn-outline-dark" onClick={handleChangeProblemClick}>

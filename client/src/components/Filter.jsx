@@ -50,7 +50,7 @@ Filter.propTypes = {
 
 function Filter(props) {
     return (
-        <div className="row">
+        <div className="row mb-2">
             <div className="col-6">
                 <div className="d-flex align-items-center">
                     Rating Range:&nbsp;
