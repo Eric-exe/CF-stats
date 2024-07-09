@@ -22,7 +22,7 @@ function ProfilePage(props) {
     const [generalStatusMsg, setGeneralStatusMsg] = useState("Loading...");
     const [profileIsUpdating, setProfileIsUpdating] = useState(false);
 
-    // update modes when username is updated
+    // update modes whenever user is updated
     useEffect(() => {
         const updateProfileInfo = async () => {
             if (props.userInfo.username === profileUsername) {
@@ -36,7 +36,7 @@ function ProfilePage(props) {
             setPageMode(props.userInfo.username === profileUsername ? "owner" : "viewer");
         };
         updateProfileInfo();
-    }, [props.userInfo.username, profileUsername]);
+    }, [profileUsername, props.userInfo]);
 
     return (
         <>

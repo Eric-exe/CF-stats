@@ -38,8 +38,8 @@ model Problem {
 model User {
     username                    String                  @id @unique
     handle                      String?                 @unique
-    rating                      Int                     @default(-1)
-    estimatedRating             Int                     @default(-1)
+    rating                      Int                     @default(0)
+    estimatedRating             Int                     @default(0)
     submissions                 Submission[]
     problemStatuses             UserProblemStatus[]
     problemsAC                  Int                     @default(0)
@@ -52,7 +52,7 @@ model User {
     recentSubmissions           Int[]
     recentAC                    Int[]
     posts                       Post[]
-    lastUpdated                 DateTime                @updatedAt
+    lastUpdated                 DateTime                @default("1970-01-01T00:00:00.000Z")
     cfLinkKey                   String                  @default("")
 }
 

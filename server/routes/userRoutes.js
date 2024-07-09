@@ -133,8 +133,8 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
         data: {
             handle: req.body.handle,
             cfLinkKey: "",
-            rating: data.result[0].rating || -1,
-            estimatedRating: Math.max(data.result[0].rating, 800) || DEFAULT_RATING,
+            rating: data.result[0].rating || 0,
+            estimatedRating: data.result[0].rating || 0,
         }
     });
     
@@ -143,9 +143,19 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
 
 router.post("/updateInfo", async (req, res) => {
     try {
-        console.log(req.body.username);
-        await CodeforcesAPI.fetchUserData(req.body.username);
-        await Data.processUserData(req.body.username);
+        await Data.updateUserData(req.body.username);
+
+        const user = await prisma.User.findUnique({
+            where: { username: req.body.username }
+        });
+
+        await prisma.User.update({
+            where: { username: req.body.username },
+            data: { 
+                estimatedRating: await Data.calculateEstimatedRating(req.body.username, user.rating),
+            }
+        });
+
         return res.status(200).json({ "status": "OK" });
     }
     catch (error) {
@@ -175,9 +185,16 @@ router.post("/updateDifficultyRating", authenticateJWT, async (req, res) => {
             newTagsDifficulty[tag] += difficultyRatingDelta;
         }
 
+        const user = await prisma.User.findUnique({
+            where: { username: req.user.username }
+        });
+
         const updatedUserInfo = await prisma.User.update({
             where: { username: req.user.username },
-            data: { tagsDifficulty: newTagsDifficulty },
+            data: { 
+                tagsDifficulty: newTagsDifficulty,
+                estimatedRating: await Data.calculateEstimatedRating(req.body.username, user.rating)
+            },
             include: USER_INCLUDES
         })
 
@@ -189,13 +206,12 @@ router.post("/updateDifficultyRating", authenticateJWT, async (req, res) => {
 
 // TESTING STUFF (IGNORE)
 router.get("/test", async (req, res) => {
-    await CodeforcesAPI.fetchProblemsData();
-    await Data.processProblemsData();
+    await Data.updateProblemsData();
     return res.json({});
 });
 
 router.get("/test2", async (req, res) => {
-    CodeforcesAPI.fetchUserData("Eric-exe");
+    Data.updateUserData("Eric-exe");
     return res.json({});
 })
 

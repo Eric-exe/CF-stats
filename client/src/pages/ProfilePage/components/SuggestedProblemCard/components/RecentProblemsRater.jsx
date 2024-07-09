@@ -13,12 +13,11 @@ function RecentProblemsRater(props) {
     const handleRatingChange = async (event, problemId) => {
         try {
             const data = await API.updateDifficultyRating(props.JWT, problemId, event.target.value).then((response) => response.json());
-            console.log(data);
             if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
                 props.JWTSetter("");
             }
             else {
-                props.userInfoSetter(data);
+                props.userInfoSetter(data); 
             }
         } catch (error) {
             console.error(error);
@@ -67,7 +66,7 @@ function RecentProblemsRater(props) {
                                     </thead>
 
                                     <tbody className="table-group-divider" style={{ maxHeight: "45vh" }}>
-                                        {props.userInfo.problemStatuses.map((problemStatus, index) => (
+                                        {props.userInfo.problemStatuses.slice(0,200).map((problemStatus, index) => (
                                             <tr key={index}>
                                                 <td>{problemStatus.problem.contestId}</td>
                                                 <td>{problemStatus.problem.index}</td>

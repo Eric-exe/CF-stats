@@ -1,8 +1,14 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const CodeforcesAPI = require("./CodeforcesAPI");
+
+const SCORES = [1, 0.75, 0.5, 0.25, 0];
+const K = 32;
+
 class Data {
-    static async processUserData(username) {
+    static async updateUserData(username) {
+        await CodeforcesAPI.fetchUserData(username);
         // count problems AC'ed
         const totalProblemsAC = await prisma.UserProblemStatus.count({
             where: {
@@ -93,11 +99,13 @@ class Data {
                 tagsDifficulty,
                 recentSubmissions: past60DaySubmissions,
                 recentAC: past60DayAC,
+                lastUpdated: new Date().toISOString(),
             },
         });
     }
 
-    static async processProblemsData() {
+    static async updateProblemsData() {
+        await CodeforcesAPI.fetchProblemsData();
         const problemsRatingSpread = {};
         const problemsTagsSpread = {};
         const allProblems = await prisma.Problem.findMany();
@@ -128,6 +136,26 @@ class Data {
                 problemsLastUpdated: new Date().toISOString(),
             },
         });
+    }
+
+    static async calculateEstimatedRating(username, rating) {
+        let estimatedRating = rating;
+        let recentProblemStatuses = await prisma.UserProblemStatus.findMany({
+            where: { username },
+            orderBy: { lastAttempted: "desc" },
+            include: { problem: true },
+            take: 200,
+        }).then(data => data.reverse());
+        
+        for (const problemStatus of recentProblemStatuses) {
+            if (problemStatus.problem.rating == -1) {
+                continue;
+            }
+            const probabilityOfSolving = 1 / (1 + Math.pow(10, (problemStatus.problem.rating - estimatedRating) / 400));
+            estimatedRating = estimatedRating + K * (SCORES[problemStatus.userDifficultyRating - 1] - probabilityOfSolving);
+        }
+
+        return estimatedRating;
     }
 }
 
