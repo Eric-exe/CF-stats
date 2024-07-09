@@ -31,7 +31,7 @@ function RecentProblemsRater(props) {
                     <h2 className="accordion-header">
                         <button
                             id="problems-rater-button"
-                            className="accordion-button collapsed"
+                            className="accordion-button collapsed overflow-auto"
                             type="button"
                             data-bs-toggle="collapse"
                             data-bs-target="#recent-problems-rater"

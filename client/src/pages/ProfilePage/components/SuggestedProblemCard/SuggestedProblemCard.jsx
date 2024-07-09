@@ -1,3 +1,4 @@
+import SuggestedProblem from "./components/SuggestedProblem";
 import RecentProblemsRater from "./components/RecentProblemsRater";
 import propTypes from "prop-types";
 
@@ -56,6 +57,13 @@ function SuggestedProblemCard(props) {
             <div className="collapse show" id="suggested-problem-body">
                 <div className="container-fluid">
                     <div className="card-body">
+                        <SuggestedProblem
+                            userInfo={props.userInfo}
+                            userInfoSetter={props.userInfoSetter}    
+                            JWT={props.JWT}
+                            JWTSetter={props.JWTSetter}
+                        />
+
                         <RecentProblemsRater
                             userInfo={props.userInfo}
                             userInfoSetter={props.userInfoSetter}

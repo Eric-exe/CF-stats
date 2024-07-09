@@ -30,7 +30,11 @@ function App() {
                 localStorage.removeItem("jwt"); // bad JWT, clear jwt from localStorage
                 setJWT("");
             } else {
-                setUserInfo(data);
+                // assign a problem by default if no problem is assigned
+                if (data.assignedProblemId === null) {
+                    setUserInfo(await API.generatedSuggestedProblem(JWT, -1, -1, []).then(response => response.json()));
+                }
+                else setUserInfo(data);
             }
         };
 
