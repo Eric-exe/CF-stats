@@ -22,7 +22,7 @@ function ProfilePage(props) {
     const [generalStatusMsg, setGeneralStatusMsg] = useState("Loading...");
     const [profileIsUpdating, setProfileIsUpdating] = useState(false);
 
-    // update modes whenever user is updated
+    // update relevant data whenever user is updated
     useEffect(() => {
         const updateProfileInfo = async () => {
             if (props.userInfo.username === profileUsername) {
@@ -36,7 +36,31 @@ function ProfilePage(props) {
             setPageMode(props.userInfo.username === profileUsername ? "owner" : "viewer");
         };
         updateProfileInfo();
+
     }, [profileUsername, props.userInfo]);
+
+    // Use SSEs to always display the latest data, such as when data is refreshed by another user
+    useEffect(() => {
+        const sse = new EventSource(`http://localhost:3000/user/sse/${profileUsername}`);
+        const getUpdatedData = async () => {
+            const data = await API.getUserInfo(profileUsername).then((response => response.json()));
+            setProfileInfo(data);
+            console.log(props.userInfo, profileUsername);
+            if (props.userInfo.username == profileUsername) {
+                props.userInfoSetter(data);
+            }
+        }
+        sse.onmessage = () => {
+            getUpdatedData();
+        }
+
+        sse.onerror = (e) => {
+            console.error(e);
+            sse.close();
+        }
+
+        return () => { sse.close() };
+    }, [props.userInfo.username]);
 
     return (
         <>

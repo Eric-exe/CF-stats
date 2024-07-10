@@ -5,7 +5,6 @@ import propTypes from "prop-types";
 
 SuggestedProblem.propTypes = {
     userInfo: propTypes.object.isRequired,
-    userInfoSetter: propTypes.func.isRequired,
     JWT: propTypes.string.isRequired,
     JWTSetter: propTypes.func.isRequired,
 };
@@ -16,17 +15,15 @@ function SuggestedProblem(props) {
     const [tags, setTags] = useState([]);
 
     const handleChangeProblemClick = async () => {
-        const data = await API.generatedSuggestedProblem(
+        const data = API.generatedSuggestedProblem(
             props.JWT,
             ratingStart === "" ? -1 : ratingStart,
             ratingEnd === "" ? -1 : ratingEnd,
             tags
-        ).then((response) => response.json());
+        ).then(response => response.json());
 
         if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
             props.JWTSetter("");
-        } else {
-            props.userInfoSetter(data);
         }
     };
 
@@ -58,11 +55,11 @@ function SuggestedProblem(props) {
                                 </div>
                             </>
                         ) : (
-                            <div className="col-10">No problem found. Change or remove some of the filters.</div>
+                            <div className="col-10">No problem found.</div>
                         )}
                         <div className="col-2 d-flex justify-content-end">
                             <button className="btn btn-sm btn-outline-dark" onClick={handleChangeProblemClick}>
-                                Change Problem
+                                New Problem
                             </button>
                         </div>
                     </div>

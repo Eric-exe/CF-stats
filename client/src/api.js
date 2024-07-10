@@ -27,7 +27,7 @@ class API {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/getOrCreateInfo", "GET", "", JWT);
     }
     static getUserInfo(username) {
-        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/info", "POST", JSON.stringify({ username }), "");
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/getInfo", "POST", JSON.stringify({ username }), "");
     }
 
     static updateUserInfo(username) {

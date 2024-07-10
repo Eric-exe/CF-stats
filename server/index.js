@@ -11,7 +11,7 @@ app.use("/user", require("./routes/userRoutes"));
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-const Data = require("./core/data")
+const Data = require("./core/data");
 
 const PORT = 3000;
 app.listen(PORT, async () => {

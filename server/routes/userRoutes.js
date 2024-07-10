@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const authenticateJWT = require("./authenticateJWT");
 const CodeforcesAPI = require("../core/CodeforcesAPI");
 const Data = require("../core/data");
+// const { cfQueue } = require("./core/jobs");
 
 const USER_INCLUDES = {
     assignedProblem: true,
@@ -69,7 +70,7 @@ router.get("/getOrCreateInfo", authenticateJWT, async (req, res) => {
     return res.json(userInfo);
 });
 
-router.post("/info", async (req, res) => {
+router.post("/getInfo", async (req, res) => {
     let username = req.body.username || "";
     let userInfo = await prisma.User.findUnique({
         where: { username },
@@ -98,31 +99,31 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
         where: { username: req.user.username },
     });
     if (potentialUserHasHandle.handle !== null) {
-        return res.status(403).json({ error: "User already linked to a handle. Refresh the page." });
+        return res.status(403).json({ Error: "User already linked to a handle. Refresh the page." });
     }
     // check if handle is already linked
     const potentialUserWithHandle = await prisma.User.findUnique({
         where: { handle: req.body.handle },
     });
     if (potentialUserWithHandle !== null) {
-        return res.status(403).json({ error: "Handle already linked" });
+        return res.status(403).json({ Error: "Handle already linked" });
     }
 
     let data = {};
     try {
         data = await CodeforcesAPI.fetchUserInfo(req.body.handle);
         if (data.status === "FAILED") {
-            return res.status(403).json({ error: "No user with handle found" });
+            return res.status(403).json({ Error: "No user with handle found" });
         }
     } catch (error) {
-        return res.status(403).json({ error: "Fetch error" });
+        return res.status(403).json({ Error: "Fetch error" });
     }
 
     const userToLink = await prisma.User.findUnique({
         where: { username: req.user.username },
     });
     if (userToLink.cfLinkKey != data.result[0].firstName) {
-        return res.status(403).json({ error: "First name does not match key" });
+        return res.status(403).json({ Error: "First name does not match key" });
     }
 
     // good match, remove link key and update handle
@@ -136,7 +137,8 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
         },
     });
 
-    return res.json(user);
+    sendUsernameUpdate(req.user.username);
+    return res.status(200).json({ status: "OK" });
 });
 
 router.post("/updateInfo", async (req, res) => {
@@ -154,6 +156,7 @@ router.post("/updateInfo", async (req, res) => {
             },
         });
 
+        sendUsernameUpdate(req.body.username);
         return res.status(200).json({ status: "OK" });
     } catch (error) {
         console.error("[Error updating info]: ", error);
@@ -195,40 +198,71 @@ router.post("/updateDifficultyRating", authenticateJWT, async (req, res) => {
             include: USER_INCLUDES,
         });
 
-        return res.json(updatedUserInfo);
+        sendUsernameUpdate(req.user.username);
+        return res.status(200).json({ status: "OK" });
     } catch (error) {
         console.error("[Error updating difficulty rating]: ", error);
+        return res.status(409).json({ status: "FAILED" });
     }
 });
 
 router.post("/generateSuggestedProblem", authenticateJWT, async (req, res) => {
-    const oldUserInfo = await prisma.User.findUnique({
-        where: { username: req.user.username },
-    });
+    try {
+        const oldUserInfo = await prisma.User.findUnique({
+            where: { username: req.user.username },
+        });
 
-    const ratingStart = req.body.ratingStart === -1 
-        ? Math.floor(oldUserInfo.estimatedRating / 100) * 100 
-        : Math.floor(req.body.ratingStart / 100) * 100;
+        const ratingStart =
+            req.body.ratingStart === -1
+                ? Math.floor(oldUserInfo.estimatedRating / 100) * 100
+                : Math.floor(req.body.ratingStart / 100) * 100;
 
-    const ratingEnd = req.body.ratingEnd === -1 
-        ? ratingStart + 300 
-        : Math.floor(req.body.ratingEnd / 100) * 100;
+        const ratingEnd = req.body.ratingEnd === -1 ? ratingStart + 300 : Math.floor(req.body.ratingEnd / 100) * 100;
 
-    const problem = await Data.generateSuggestedProblem(
-        req.user.username,
-        ratingStart,
-        ratingEnd,
-        req.body.tags || []
-    );
+        const problem = await Data.generateSuggestedProblem(req.user.username, ratingStart, ratingEnd, req.body.tags || []);
 
-    const updatedUserInfo = await prisma.User.update({
-        where: { username: req.user.username },
-        data: { assignedProblemId: problem ? problem.id : null },
-        include: USER_INCLUDES,
-    });
+        await prisma.User.update({
+            where: { username: req.user.username },
+            data: { assignedProblemId: problem ? problem.id : null },
+            include: USER_INCLUDES,
+        });
 
-    return res.json(updatedUserInfo);
+        sendUsernameUpdate(req.user.username);
+        return res.status(200).json({ status: "OK" });
+    } catch (error) {
+        console.error(error);
+        return res.status(409).json({ status: "FAILED" });
+    }
 });
+
+// SSE, handles when user requests data refresh but does not stay on page
+const userConnections = {};
+router.get("/sse/:username", (req, res) => {
+    const username = req.params.username;
+
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    if (!userConnections[username]) {
+        userConnections[username] = [];
+    }
+    userConnections[username].push(res);
+
+    res.on("close", () => {
+        userConnections[username] = userConnections[username].filter((conn) => conn !== res);
+        res.end();
+    });
+});
+
+function sendUsernameUpdate(username) {
+    if (Object.prototype.hasOwnProperty.call(userConnections, username)) {
+        for (const client of userConnections[username]) {
+            client.write("data: " + JSON.stringify({ message: "UPDATED" }) + "\n\n");
+        }
+    }
+}
 
 // TESTING STUFF (IGNORE)
 router.get("/test", async (req, res) => {
