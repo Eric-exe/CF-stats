@@ -7,6 +7,7 @@ const SCORES = [1, 0.75, 0.5, 0.25, 0];
 const K = 20;
 
 class Data {
+    // should not be used unless called from a job with rate limit
     static async updateUserData(username) {
         await CodeforcesAPI.fetchUserData(username);
         // count problems AC'ed
@@ -104,6 +105,40 @@ class Data {
         });
     }
 
+    // should not be used unless called from a job with rate limit
+    static async updateProblemsData() {
+        await CodeforcesAPI.fetchProblemsData();
+        const problemsRatingSpread = {};
+        const problemsTagsSpread = {};
+        const allProblems = await prisma.Problem.findMany();
+        for (const problem of allProblems) {
+            if (!problemsRatingSpread[problem.rating]) {
+                problemsRatingSpread[problem.rating] = 0;
+            }
+            problemsRatingSpread[problem.rating]++;
+
+            if (!problemsTagsSpread[problem.rating]) {
+                problemsTagsSpread[problem.rating] = {};
+            }
+
+            for (const tag of problem.tags) {
+                if (!problemsTagsSpread[problem.rating][tag]) {
+                    problemsTagsSpread[problem.rating][tag] = 0;
+                }
+                problemsTagsSpread[problem.rating][tag]++;
+            }
+        }
+
+        await prisma.Metadata.update({
+            where: { key: "meta" },
+            data: {
+                problemsRatingSpread,
+                problemsTagsSpread,
+                problemsLastUpdated: new Date().toISOString(),
+            },
+        });
+    }
+
     static async updateUserRatingDifficulty(username, problemId, newDifficultyRating) {
         try {
             const oldUserInfo = await prisma.User.findUnique({
@@ -139,39 +174,6 @@ class Data {
         } catch (error) {
             return error;
         }
-    }
-
-    static async updateProblemsData() {
-        await CodeforcesAPI.fetchProblemsData();
-        const problemsRatingSpread = {};
-        const problemsTagsSpread = {};
-        const allProblems = await prisma.Problem.findMany();
-        for (const problem of allProblems) {
-            if (!problemsRatingSpread[problem.rating]) {
-                problemsRatingSpread[problem.rating] = 0;
-            }
-            problemsRatingSpread[problem.rating]++;
-
-            if (!problemsTagsSpread[problem.rating]) {
-                problemsTagsSpread[problem.rating] = {};
-            }
-
-            for (const tag of problem.tags) {
-                if (!problemsTagsSpread[problem.rating][tag]) {
-                    problemsTagsSpread[problem.rating][tag] = 0;
-                }
-                problemsTagsSpread[problem.rating][tag]++;
-            }
-        }
-
-        await prisma.Metadata.update({
-            where: { key: "meta" },
-            data: {
-                problemsRatingSpread,
-                problemsTagsSpread,
-                problemsLastUpdated: new Date().toISOString(),
-            },
-        });
     }
 
     static async calculateEstimatedRating(username, rating) {

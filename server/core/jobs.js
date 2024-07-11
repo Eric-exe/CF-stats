@@ -40,7 +40,11 @@ const cfWorker = new Worker(
     }
 );
 
-// CF Worker jobs. Any job that uses CF API should be executed through cfWorker due to API limit
+/*
+CF Worker jobs. 
+Any job that uses CF API should be executed through cfWorker due to API limit
+*/
+
 const linkCF = async (username, handle) => {
     // Error handling: is username already linked
     const potentialUserHasHandle = await prisma.User.findUnique({
