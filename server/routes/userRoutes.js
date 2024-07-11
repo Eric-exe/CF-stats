@@ -6,7 +6,8 @@ const jwt = require("jsonwebtoken");
 const authenticateJWT = require("./authenticateJWT");
 const CodeforcesAPI = require("../core/CodeforcesAPI");
 const Data = require("../core/data");
-// const { cfQueue } = require("./core/jobs");
+const SSE = require("../core/sse");
+const { cfQueue } = require("../core/jobs");
 
 const USER_INCLUDES = {
     assignedProblem: true,
@@ -127,7 +128,7 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
     }
 
     // good match, remove link key and update handle
-    const user = await prisma.User.update({
+    await prisma.User.update({
         where: { username: req.user.username },
         data: {
             handle: req.body.handle,
@@ -137,26 +138,13 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
         },
     });
 
-    sendUsernameUpdate(req.user.username);
+    SSE.sendUsernameUpdate(req.user.username);
     return res.status(200).json({ status: "OK" });
 });
 
 router.post("/updateInfo", async (req, res) => {
     try {
-        await Data.updateUserData(req.body.username);
-
-        const user = await prisma.User.findUnique({
-            where: { username: req.body.username },
-        });
-
-        await prisma.User.update({
-            where: { username: req.body.username },
-            data: {
-                estimatedRating: await Data.calculateEstimatedRating(req.body.username, user.rating),
-            },
-        });
-
-        sendUsernameUpdate(req.body.username);
+        cfQueue.add("update user", { fn: "UPDATE_USER", username: req.body.username }, { priority: 2 });
         return res.status(200).json({ status: "OK" });
     } catch (error) {
         console.error("[Error updating info]: ", error);
@@ -166,39 +154,8 @@ router.post("/updateInfo", async (req, res) => {
 
 router.post("/updateDifficultyRating", authenticateJWT, async (req, res) => {
     try {
-        const oldUserInfo = await prisma.User.findUnique({
-            where: { username: req.user.username },
-        });
-        const oldProblemStatus = await prisma.userProblemStatus.findUnique({
-            where: { username_problemId: { username: req.user.username, problemId: req.body.problemId } },
-            include: { problem: true },
-        });
-
-        await prisma.userProblemStatus.update({
-            where: { username_problemId: { username: req.user.username, problemId: req.body.problemId } },
-            data: { userDifficultyRating: parseInt(req.body.newDifficultyRating) },
-        });
-
-        const newTagsDifficulty = oldUserInfo.tagsDifficulty;
-        const difficultyRatingDelta = req.body.newDifficultyRating - oldProblemStatus.userDifficultyRating;
-        for (const tag of oldProblemStatus.problem.tags) {
-            newTagsDifficulty[tag] += difficultyRatingDelta;
-        }
-
-        const user = await prisma.User.findUnique({
-            where: { username: req.user.username },
-        });
-
-        const updatedUserInfo = await prisma.User.update({
-            where: { username: req.user.username },
-            data: {
-                tagsDifficulty: newTagsDifficulty,
-                estimatedRating: await Data.calculateEstimatedRating(req.body.username, user.rating),
-            },
-            include: USER_INCLUDES,
-        });
-
-        sendUsernameUpdate(req.user.username);
+        Data.updateUserRatingDifficulty(req.user.username, req.body.problemId, req.body.newDifficultyRating);
+        SSE.sendUsernameUpdate(req.user.username);
         return res.status(200).json({ status: "OK" });
     } catch (error) {
         console.error("[Error updating difficulty rating]: ", error);
@@ -227,7 +184,7 @@ router.post("/generateSuggestedProblem", authenticateJWT, async (req, res) => {
             include: USER_INCLUDES,
         });
 
-        sendUsernameUpdate(req.user.username);
+        SSE.sendUsernameUpdate(req.user.username);
         return res.status(200).json({ status: "OK" });
     } catch (error) {
         console.error(error);
@@ -235,34 +192,18 @@ router.post("/generateSuggestedProblem", authenticateJWT, async (req, res) => {
     }
 });
 
-// SSE, handles when user requests data refresh but does not stay on page
-const userConnections = {};
 router.get("/sse/:username", (req, res) => {
     const username = req.params.username;
-
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
-
-    if (!userConnections[username]) {
-        userConnections[username] = [];
-    }
-    userConnections[username].push(res);
-
+    SSE.addUserClient(username, res);
     res.on("close", () => {
-        userConnections[username] = userConnections[username].filter((conn) => conn !== res);
+        SSE.removeUserClient(username, res);
         res.end();
     });
 });
-
-function sendUsernameUpdate(username) {
-    if (Object.prototype.hasOwnProperty.call(userConnections, username)) {
-        for (const client of userConnections[username]) {
-            client.write("data: " + JSON.stringify({ message: "UPDATED" }) + "\n\n");
-        }
-    }
-}
 
 // TESTING STUFF (IGNORE)
 router.get("/test", async (req, res) => {

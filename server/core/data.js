@@ -104,13 +104,49 @@ class Data {
         });
     }
 
+    static async updateUserRatingDifficulty(username, problemId, newDifficultyRating) {
+        try {
+            const oldUserInfo = await prisma.User.findUnique({
+                where: { username },
+            });
+            const oldProblemStatus = await prisma.userProblemStatus.findUnique({
+                where: { username_problemId: { username, problemId } },
+                include: { problem: true },
+            });
+
+            await prisma.userProblemStatus.update({
+                where: { username_problemId: { username, problemId } },
+                data: { userDifficultyRating: parseInt(newDifficultyRating) },
+            });
+
+            const newTagsDifficulty = oldUserInfo.tagsDifficulty;
+            const difficultyRatingDelta = newDifficultyRating - oldProblemStatus.userDifficultyRating;
+            for (const tag of oldProblemStatus.problem.tags) {
+                newTagsDifficulty[tag] += difficultyRatingDelta;
+            }
+
+            const user = await prisma.User.findUnique({
+                where: { username },
+            });
+
+            await prisma.User.update({
+                where: { username },
+                data: {
+                    tagsDifficulty: newTagsDifficulty,
+                    estimatedRating: await this.calculateEstimatedRating(username, user.rating),
+                },
+            });
+        } catch (error) {
+            return error;
+        }
+    }
+
     static async updateProblemsData() {
         await CodeforcesAPI.fetchProblemsData();
         const problemsRatingSpread = {};
         const problemsTagsSpread = {};
         const allProblems = await prisma.Problem.findMany();
         for (const problem of allProblems) {
-
             if (!problemsRatingSpread[problem.rating]) {
                 problemsRatingSpread[problem.rating] = 0;
             }
@@ -145,8 +181,8 @@ class Data {
             orderBy: { lastAttempted: "desc" },
             include: { problem: true },
             take: 200,
-        }).then(data => data.reverse());
-        
+        }).then((data) => data.reverse());
+
         for (const problemStatus of recentProblemStatuses) {
             if (problemStatus.problem.rating == -1) {
                 continue;
@@ -160,13 +196,13 @@ class Data {
 
     static async generateSuggestedProblem(username, ratingStart, ratingEnd, tagsChosen) {
         const metadata = await prisma.Metadata.findUnique({
-            where: { key: "meta" }
+            where: { key: "meta" },
         });
 
         const userInfo = await prisma.User.findUnique({
-            where: { username }
+            where: { username },
         });
-        
+
         const problemsProbabilityOnRatingRange = this.getProblemsProbabilityOnRatingRange(metadata, ratingStart, ratingEnd, tagsChosen);
         const problemsProbabilityOnUserDifficulty = this.getProblemsProbabilityOnUserDifficulty(userInfo, tagsChosen);
 
@@ -186,7 +222,7 @@ class Data {
         // pick a random tag based on their weighted probabilities
         const randomNum = Math.random();
         let prefix = 0;
-        let tagChosen= "";
+        let tagChosen = "";
         for (const tag of Object.keys(problemsProbability)) {
             prefix += problemsProbability[tag];
             if (prefix >= randomNum) {
@@ -196,15 +232,15 @@ class Data {
         }
 
         const possibleProblems = await prisma.Problem.findMany({
-            where: { 
+            where: {
                 rating: {
                     gte: ratingStart,
                     lte: ratingEnd,
                 },
                 tags: {
-                    has: tagChosen
-                }
-            }
+                    has: tagChosen,
+                },
+            },
         });
 
         return possibleProblems[Math.floor(Math.random() * possibleProblems.length)];

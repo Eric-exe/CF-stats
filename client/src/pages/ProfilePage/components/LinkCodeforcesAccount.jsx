@@ -5,8 +5,8 @@ import propTypes from "prop-types";
 LinkCodeforcesAccount.propTypes = {
     profileUsername: propTypes.string.isRequired,
     JWT: propTypes.string.isRequired,
-    profileIsUpdatingSetter: propTypes.func.isRequired,
 };
+
 function LinkCodeforcesAccount(props) {
     const [status, setStatus] = useState("");
     const [statusIsGood, setStatusIsGood] = useState(true); // determines the color of the status
@@ -36,10 +36,7 @@ function LinkCodeforcesAccount(props) {
             setStatusIsGood(true);
             bootstrap.Modal.getInstance(document.getElementById("cfLinkModal")).hide();
             setPotentialHandle("");
-
-            props.profileIsUpdatingSetter(true);
             await API.updateUserInfo(props.profileUsername);
-            props.profileIsUpdatingSetter(false);
         }
     };
 

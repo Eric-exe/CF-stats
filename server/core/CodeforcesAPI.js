@@ -12,6 +12,7 @@ class CodeforcesAPI {
     }
 
     static async fetchUserData(username) {
+        console.log("AA");
         const user = await prisma.User.findUnique({ where: { username } });
         if (!user || !user.handle) {
             return console.error("No valid user or user handle");
@@ -23,6 +24,7 @@ class CodeforcesAPI {
             return console.error("[Failed to fetch user stats: ", error);
         }
 
+        console.log("AWS");
         for (const submission of data.result) {
             // check if submission exists, if it does, that means everything after it also exists
             const existingSubmission = await prisma.Submission.findUnique({
