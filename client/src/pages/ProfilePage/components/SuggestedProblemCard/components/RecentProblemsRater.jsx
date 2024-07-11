@@ -4,7 +4,6 @@ import propTypes from "prop-types";
 
 RecentProblemsRater.propTypes = {
     userInfo: propTypes.object.isRequired,
-    userInfoSetter: propTypes.func.isRequired,
     JWT: propTypes.string.isRequired,
     JWTSetter: propTypes.func.isRequired,
 };
@@ -12,12 +11,9 @@ RecentProblemsRater.propTypes = {
 function RecentProblemsRater(props) {
     const handleRatingChange = async (event, problemId) => {
         try {
-            const data = await API.updateDifficultyRating(props.JWT, problemId, event.target.value).then((response) => response.json());
+            const data = await API.updateDifficultyRating(props.JWT, problemId, event.target.value).then(response => response.json());
             if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
                 props.JWTSetter("");
-            }
-            else {
-                props.userInfoSetter(data); 
             }
         } catch (error) {
             console.error(error);
@@ -31,7 +27,7 @@ function RecentProblemsRater(props) {
                     <h2 className="accordion-header">
                         <button
                             id="problems-rater-button"
-                            className="accordion-button collapsed"
+                            className="accordion-button collapsed overflow-auto"
                             type="button"
                             data-bs-toggle="collapse"
                             data-bs-target="#recent-problems-rater"

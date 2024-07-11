@@ -20,9 +20,8 @@ function ProfilePage(props) {
     const [pageMode, setPageMode] = useState("viewer");
     const [profileInfo, setProfileInfo] = useState(null);
     const [generalStatusMsg, setGeneralStatusMsg] = useState("Loading...");
-    const [profileIsUpdating, setProfileIsUpdating] = useState(false);
 
-    // update modes whenever user is updated
+    // update relevant data whenever user is updated
     useEffect(() => {
         const updateProfileInfo = async () => {
             if (props.userInfo.username === profileUsername) {
@@ -38,6 +37,30 @@ function ProfilePage(props) {
         updateProfileInfo();
     }, [profileUsername, props.userInfo]);
 
+    // Use SSEs to always display the latest data, such as when data is refreshed by another user
+    useEffect(() => {
+        const sse = new EventSource(`http://localhost:3000/user/sse/${profileUsername}`);
+        const getUpdatedData = async () => {
+            const data = await API.getUserInfo(profileUsername).then((response) => response.json());
+            setProfileInfo(data);
+            if (props.userInfo.username == profileUsername) {
+                props.userInfoSetter(data);
+            }
+        };
+        sse.onmessage = () => {
+            getUpdatedData();
+        };
+
+        sse.onerror = (e) => {
+            console.error(e);
+            sse.close();
+        };
+
+        return () => {
+            sse.close();
+        };
+    }, [props.userInfo.username]);
+
     return (
         <>
             {profileInfo === null ? (
@@ -45,16 +68,6 @@ function ProfilePage(props) {
             ) : (
                 <div className="profile-page row justify-content-center container-fluid">
                     <div className="col-12">
-                        {profileIsUpdating ? (
-                            <div className="d-flex justify-content-center align-items-center mt-4">
-                                <div className="spinner-border" role="status">
-                                    <span className="sr-only" />
-                                </div>
-                                &nbsp;Updating user info...
-                            </div>
-                        ) : (
-                            <></>
-                        )}
                         {/* General user stat bar */}
                         <div className="card card-body shadow m-4 overflow-auto">
                             <div className="row">
@@ -73,7 +86,6 @@ function ProfilePage(props) {
                                             JWT={props.JWT}
                                             userInfoSetter={props.userInfoSetter}
                                             profileInfoSetter={setProfileInfo}
-                                            profileIsUpdatingSetter={setProfileIsUpdating}
                                         />
                                     ) : (
                                         <></>
@@ -92,7 +104,13 @@ function ProfilePage(props) {
                                     </div>
                                     <div className="my-auto">
                                         <button className="btn btn-sm btn-outline-dark">
-                                            <i className="bi bi-arrow-clockwise"></i>
+                                            {!profileInfo.isUpdating ? (
+                                                <i className="bi bi-arrow-clockwise"></i>
+                                            ) : (
+                                                <div className="spinner-border spinner-border-sm" role="status">
+                                                    <span className="sr-only" />
+                                                </div>
+                                            )}
                                         </button>
                                     </div>
                                 </div>

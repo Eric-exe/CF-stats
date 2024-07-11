@@ -33,7 +33,7 @@ function App() {
                 setUserInfo(data);
             }
         };
-
+        
         if (JWT !== "") {
             updateUserInfo();
         } else {

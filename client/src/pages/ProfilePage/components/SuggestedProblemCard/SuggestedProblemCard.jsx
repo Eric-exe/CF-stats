@@ -1,51 +1,12 @@
+import SuggestedProblem from "./components/SuggestedProblem";
 import RecentProblemsRater from "./components/RecentProblemsRater";
 import propTypes from "prop-types";
 
 SuggestedProblemCard.propTypes = {
     userInfo: propTypes.object.isRequired,
-    userInfoSetter: propTypes.func.isRequired,
     JWT: propTypes.string.isRequired,
     JWTSetter: propTypes.func.isRequired,
 };
-
-const PROBLEM_TAGS = [
-    "dfs and similar",
-    "divide and conquer",
-    "graphs",
-    "combinatorics",
-    "dp",
-    "math",
-    "brute force",
-    "data structures",
-    "greedy",
-    "sortings",
-    "two pointers",
-    "implementation",
-    "interactive",
-    "trees",
-    "dsu",
-    "games",
-    "hashing",
-    "number theory",
-    "binary search",
-    "geometry",
-    "constructive algorithms",
-    "string suffix structures",
-    "bitmasks",
-    "meet-in-the-middle",
-    "matrices",
-    "ternary search",
-    "fft",
-    "shortest paths",
-    "2-sat",
-    "probabilities",
-    "flows",
-    "*special",
-    "graph matchings",
-    "schedules",
-    "expression parsing",
-    "chinese remainder theorem",
-];
 
 function SuggestedProblemCard(props) {
     return (
@@ -56,9 +17,14 @@ function SuggestedProblemCard(props) {
             <div className="collapse show" id="suggested-problem-body">
                 <div className="container-fluid">
                     <div className="card-body">
+                        <SuggestedProblem
+                            userInfo={props.userInfo}
+                            JWT={props.JWT}
+                            JWTSetter={props.JWTSetter}
+                        />
+
                         <RecentProblemsRater
                             userInfo={props.userInfo}
-                            userInfoSetter={props.userInfoSetter}
                             JWT={props.JWT}
                             JWTSetter={props.JWTSetter}
                         />

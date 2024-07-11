@@ -65,8 +65,8 @@ function ProblemStatsCard(props) {
                                 </div>
                             </div>
 
-                            <div className="col-md-4">Your Problems:</div>
-                            <div className="col-md-4">Problems in your Rating Range:</div>
+                            <div className="col-md-4">Problems Breakdown:</div>
+                            <div className="col-md-4">Problems in Estimated Rating Range Breakdown:</div>
                         </div>
                     </div>
                 </div>

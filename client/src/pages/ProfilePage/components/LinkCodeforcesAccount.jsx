@@ -5,13 +5,11 @@ import propTypes from "prop-types";
 LinkCodeforcesAccount.propTypes = {
     profileUsername: propTypes.string.isRequired,
     JWT: propTypes.string.isRequired,
-    userInfoSetter: propTypes.func.isRequired,
-    profileInfoSetter: propTypes.func.isRequired,
-    profileIsUpdatingSetter: propTypes.func.isRequired,
 };
+
 function LinkCodeforcesAccount(props) {
     const [status, setStatus] = useState("");
-    const [statusIsGood, setStatusIsGood] = useState(true); // determines the color of the staus
+    const [statusIsGood, setStatusIsGood] = useState(true); // determines the color of the status
     const [potentialHandle, setPotentialHandle] = useState("");
     const [key, setKey] = useState("");
 
@@ -28,24 +26,17 @@ function LinkCodeforcesAccount(props) {
 
     const handleCFLink = async () => {
         const data = await API.linkCF(potentialHandle, props.JWT).then((response) => response.json());
-        if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
+        if (Object.prototype.hasOwnProperty.call(data, "Error")) {
             // linking failed
-            setStatus(data.error);
+            setStatus(data.Error);
             setStatusIsGood(false);
         } else {
             // linking successful, update and display user info
             setStatus("Handle linked!");
             setStatusIsGood(true);
             bootstrap.Modal.getInstance(document.getElementById("cfLinkModal")).hide();
-            props.profileInfoSetter(data => ({...data, handle: potentialHandle}));
             setPotentialHandle("");
-
-            props.profileIsUpdatingSetter(true);
             await API.updateUserInfo(props.profileUsername);
-            await API.getUserInfo(props.profileUsername)
-                .then((response) => response.json())
-                .then((data) => {props.profileInfoSetter(data); props.userInfoSetter(data)});
-            props.profileIsUpdatingSetter(false);
         }
     };
 

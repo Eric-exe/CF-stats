@@ -27,7 +27,7 @@ class API {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/getOrCreateInfo", "GET", "", JWT);
     }
     static getUserInfo(username) {
-        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/info", "POST", JSON.stringify({ username }), "");
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/getInfo", "POST", JSON.stringify({ username }), "");
     }
 
     static updateUserInfo(username) {
@@ -44,6 +44,10 @@ class API {
 
     static updateDifficultyRating(JWT, problemId, newDifficultyRating) {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/updateDifficultyRating", "POST", JSON.stringify({ problemId, newDifficultyRating }), JWT);
+    }
+
+    static generatedSuggestedProblem(JWT, ratingStart, ratingEnd, tags) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/generateSuggestedProblem", "POST", JSON.stringify({ ratingStart, ratingEnd, tags }), JWT);
     }
 }
 
