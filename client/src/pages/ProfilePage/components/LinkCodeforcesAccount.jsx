@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import API from "../../../api.js";
 import propTypes from "prop-types";
 
 LinkCodeforcesAccount.propTypes = {
     profileUsername: propTypes.string.isRequired,
     JWT: propTypes.string.isRequired,
+    linkResponse: propTypes.object.isRequired,
 };
 
 function LinkCodeforcesAccount(props) {
@@ -18,27 +19,34 @@ function LinkCodeforcesAccount(props) {
         if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
             setStatus(data.error);
             setKey("N/A");
-        }
-        else {
+        } else {
             setKey(data["key"]);
         }
     };
 
-    const handleCFLink = async () => {
-        const data = await API.linkCF(potentialHandle, props.JWT).then((response) => response.json());
-        if (Object.prototype.hasOwnProperty.call(data, "Error")) {
-            // linking failed
-            setStatus(data.Error);
-            setStatusIsGood(false);
-        } else {
-            // linking successful, update and display user info
-            setStatus("Handle linked!");
-            setStatusIsGood(true);
-            bootstrap.Modal.getInstance(document.getElementById("cfLinkModal")).hide();
-            setPotentialHandle("");
-            await API.updateUserInfo(props.profileUsername);
-        }
+    const handleCFLink = () => {
+        API.linkCF(potentialHandle, props.JWT).then((response) => response.json());
     };
+
+    // handle response
+    useEffect(() => {
+        if (props.linkResponse) {
+            if (props.linkResponse.status === "OK") {
+                setStatus("Handle linked!");
+                setStatusIsGood(true);
+
+                const modalInstance = bootstrap.Modal.getInstance(document.getElementById("cfLinkModal"));
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+                setPotentialHandle("");
+                API.updateUserInfo(props.profileUsername);
+            } else {
+                setStatus(props.linkResponse.Error);
+                setStatusIsGood(false);
+            }
+        }
+    }, [props.linkResponse]);
 
     return (
         <>

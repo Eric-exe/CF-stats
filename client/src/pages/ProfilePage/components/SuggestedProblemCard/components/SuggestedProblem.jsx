@@ -15,7 +15,7 @@ function SuggestedProblem(props) {
     const [tags, setTags] = useState([]);
 
     const handleChangeProblemClick = async () => {
-        const data = API.generatedSuggestedProblem(
+        const data = await API.generatedSuggestedProblem(
             props.JWT,
             ratingStart === "" ? -1 : ratingStart,
             ratingEnd === "" ? -1 : ratingEnd,

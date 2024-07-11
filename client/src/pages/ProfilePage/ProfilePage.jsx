@@ -21,7 +21,8 @@ function ProfilePage(props) {
     const [profileInfo, setProfileInfo] = useState(null);
     const [generalStatusMsg, setGeneralStatusMsg] = useState("Loading...");
 
-    // update relevant data whenever user is updated
+    const [linkResponse, setLinkResponse] = useState({});
+
     useEffect(() => {
         const updateProfileInfo = async () => {
             if (props.userInfo.username === profileUsername) {
@@ -37,29 +38,40 @@ function ProfilePage(props) {
         updateProfileInfo();
     }, [profileUsername, props.userInfo]);
 
-    // Use SSEs to always display the latest data, such as when data is refreshed by another user
+    // Use SSEs to always display the latest data without needing an API request
     useEffect(() => {
-        const sse = new EventSource(`http://localhost:3000/user/sse/${profileUsername}`);
-        const getUpdatedData = async () => {
-            const data = await API.getUserInfo(profileUsername).then((response) => response.json());
-            setProfileInfo(data);
-            if (props.userInfo.username == profileUsername) {
-                props.userInfoSetter(data);
-            }
-        };
-        sse.onmessage = () => {
-            getUpdatedData();
+        let sse = new EventSource(`http://localhost:3000/user/sse/${profileUsername}`);
+        sse.onmessage = (e) => {
+            getUpdatedData(e);
         };
 
         sse.onerror = (e) => {
             console.error(e);
             sse.close();
+            sse = new EventSource(`http://localhost:3000/user/sse/${profileUsername}`);
+        };
+
+        const getUpdatedData = async (e) => {
+            const data = JSON.parse(e.data);
+
+            // general user update response
+            if (data.job === "UPDATE_USER") {
+                const userData = await API.getUserInfo(profileUsername).then((response) => response.json());
+                if (props.userInfo.username === profileUsername) {
+                    props.userInfoSetter(userData);
+                }
+            }
+
+            // linking response
+            if (data.job === "LINK_USER") {
+                setLinkResponse(data);
+            }
         };
 
         return () => {
             sse.close();
         };
-    }, [props.userInfo.username]);
+    }, [profileUsername, props.userInfo.username]);
 
     return (
         <>
@@ -86,6 +98,7 @@ function ProfilePage(props) {
                                             JWT={props.JWT}
                                             userInfoSetter={props.userInfoSetter}
                                             profileInfoSetter={setProfileInfo}
+                                            linkResponse={linkResponse}
                                         />
                                     ) : (
                                         <></>
@@ -124,7 +137,6 @@ function ProfilePage(props) {
                                 {pageMode === "owner" ? (
                                     <SuggestedProblemCard
                                         userInfo={props.userInfo}
-                                        userInfoSetter={props.userInfoSetter}
                                         JWT={props.JWT}
                                         JWTSetter={props.JWTSetter}
                                     />

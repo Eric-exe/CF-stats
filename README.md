@@ -14,9 +14,9 @@
 - [x] Create submission stats (attempts, AC, percentages)
 
 ### Week 6
-- [ ] Implement the question suggestion algorithm (should adjust the estimated Elo on whether a user can solve it and their attempts)
-- [ ] Add problem refresh
-- [ ] Suggestion Problems - Implement topic targetted & Elo targetted
+- [x] Implement the question suggestion algorithm (should adjust the estimated Elo on whether a user can solve it and their attempts)
+- [x] Add problem refresh
+- [x] Suggestion Problems - Implement topic targetted & Elo targetted
 - [ ] Get started with BullMQ task schedulers to constantly update information of users and questions if data is too old (updating every day)
 
 ### Week 7

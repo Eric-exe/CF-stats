@@ -1,9 +1,9 @@
 const SSE = {
     userConnections: {},
-    sendUsernameUpdate(username) {
+    sendUsernameUpdate(username, message) {
         if (Object.prototype.hasOwnProperty.call(this.userConnections, username)) {
             for (const client of this.userConnections[username]) {
-                client.write("data: " + JSON.stringify({ message: "UPDATED" }) + "\n\n");
+                client.write("data: " + JSON.stringify(message) + "\n\n");
             }
         }
     },

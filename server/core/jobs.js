@@ -3,6 +3,7 @@ const redisConnection = require("./redisConnection");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const Data = require("./data");
+const CodeforcesAPI = require("./CodeforcesAPI");
 const SSE = require("./sse");
 
 const cfQueue = new Queue("codeforces queue", {
@@ -20,7 +21,10 @@ const cfWorker = new Worker(
             case "UPDATE_PROBLEM":
                 break;
             case "UPDATE_USER":
-                await updateUserData(job.data.username);
+                updateUserData(job.data.username);
+                break;
+            case "LINK_USER":
+                linkCF(job.data.username, job.data.handle);
                 break;
             default:
                 break;
@@ -36,18 +40,92 @@ const cfWorker = new Worker(
     }
 );
 
-const updateUserData = async (username) => {
-    // inform user that data is updating
+// CF Worker jobs. Any job that uses CF API should be executed through cfWorker due to API limit
+const linkCF = async (username, handle) => {
+    // Error handling: is username already linked
+    const potentialUserHasHandle = await prisma.User.findUnique({
+        where: { username },
+    });
+    if (potentialUserHasHandle.handle !== null) {
+        SSE.sendUsernameUpdate(username, {
+            job: "LINK_USER",
+            status: "FAILED",
+            Error: "User already linked to a handle. Refresh the page.",
+        });
+        return;
+    }
+
+    // Error handling: is handle already linked
+    const potentialUserWithHandle = await prisma.User.findUnique({
+        where: { handle },
+    });
+    if (potentialUserWithHandle !== null) {
+        SSE.sendUsernameUpdate(username, {
+            job: "LINK_USER",
+            status: "FAILED",
+            Error: "Handle already linked.",
+        });
+        return;
+    }
+
+    let data = {};
+    try {
+        data = await CodeforcesAPI.fetchUserInfo(handle);
+        // Error handling: user doesn't exist on CF
+        if (data.status === "FAILED") {
+            SSE.sendUsernameUpdate(username, {
+                job: "LINK_USER",
+                status: "FAILED",
+                Error: "No user with handle found",
+            });
+            return;
+        }
+    } catch (error) {
+        // Error handling: fetch request failed
+        SSE.sendUsernameUpdate(username, {
+            job: "LINK_USER",
+            status: "FAILED",
+            Error: "Fetch error",
+        });
+        return;
+    }
+
+    // Error handling: cfLinkKey doesn't match firstname
+    const userToLink = await prisma.User.findUnique({
+        where: { username },
+    });
+
+    if (userToLink.cfLinkKey != data.result[0].firstName) {
+        SSE.sendUsernameUpdate(username, {
+            job: "LINK_USER",
+            status: "FAILED",
+            Error: "First name does not match key",
+        });
+        return;
+    }
+
+    // good match, remove link key and update handle
     await prisma.User.update({
         where: { username },
-        data: { isUpdating: true },
+        data: {
+            handle,
+            cfLinkKey: "",
+            rating: data.result[0].rating || 0,
+            estimatedRating: data.result[0].rating || 0,
+        },
     });
-    SSE.sendUsernameUpdate(username);
 
+    SSE.sendUsernameUpdate(username, {
+        job: "LINK_USER",
+        status: "OK",
+    });
+};
+
+const updateUserData = async (username) => {
     await Data.updateUserData(username);
 
     const user = await prisma.User.findUnique({
-        where: { username }
+        where: { username },
     });
 
     // calculate rating and inform user that user info is done updating
@@ -59,6 +137,6 @@ const updateUserData = async (username) => {
         },
     });
 
-    SSE.sendUsernameUpdate(username);
+    SSE.sendUsernameUpdate(username, { job: "UPDATE_USER", status: "OK" });
 };
 module.exports = { cfQueue, cfWorker };

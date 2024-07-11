@@ -194,56 +194,69 @@ class Data {
         return estimatedRating;
     }
 
-    static async generateSuggestedProblem(username, ratingStart, ratingEnd, tagsChosen) {
-        const metadata = await prisma.Metadata.findUnique({
-            where: { key: "meta" },
-        });
+    static async generateSuggestedProblem(username, ratingStartRaw, ratingEndRaw, tagsChosen) {
+        try {
+            const metadata = await prisma.Metadata.findUnique({
+                where: { key: "meta" },
+            });
 
-        const userInfo = await prisma.User.findUnique({
-            where: { username },
-        });
+            const userInfo = await prisma.User.findUnique({
+                where: { username },
+            });
 
-        const problemsProbabilityOnRatingRange = this.getProblemsProbabilityOnRatingRange(metadata, ratingStart, ratingEnd, tagsChosen);
-        const problemsProbabilityOnUserDifficulty = this.getProblemsProbabilityOnUserDifficulty(userInfo, tagsChosen);
+            // convert ratings so that they are divisible by 100
+            const ratingStart =
+                ratingStartRaw === -1 ? Math.floor(userInfo.estimatedRating / 100) * 100 : Math.ceil(ratingStartRaw / 100) * 100;
 
-        const problemsProbability = problemsProbabilityOnRatingRange;
+            const ratingEnd = ratingEndRaw === -1 ? ratingStart + 300 : Math.floor(ratingEndRaw / 100) * 100;
 
-        for (const tag of Object.keys(problemsProbabilityOnUserDifficulty)) {
-            if (!problemsProbability[tag]) {
-                problemsProbability[tag] = 0;
+            const problemsProbabilityOnRatingRange = this.getProblemsProbabilityOnRatingRange(metadata, ratingStart, ratingEnd, tagsChosen);
+            const problemsProbabilityOnUserDifficulty = this.getProblemsProbabilityOnUserDifficulty(userInfo, tagsChosen);
+
+            const problemsProbability = problemsProbabilityOnRatingRange;
+
+            for (const tag of Object.keys(problemsProbabilityOnUserDifficulty)) {
+                if (!problemsProbability[tag]) {
+                    problemsProbability[tag] = 0;
+                }
+                problemsProbability[tag] += problemsProbabilityOnUserDifficulty[tag];
             }
-            problemsProbability[tag] += problemsProbabilityOnUserDifficulty[tag];
-        }
 
-        for (const tag of Object.keys(problemsProbability)) {
-            problemsProbability[tag] /= 2;
-        }
-
-        // pick a random tag based on their weighted probabilities
-        const randomNum = Math.random();
-        let prefix = 0;
-        let tagChosen = "";
-        for (const tag of Object.keys(problemsProbability)) {
-            prefix += problemsProbability[tag];
-            if (prefix >= randomNum) {
-                tagChosen = tag;
-                break;
+            for (const tag of Object.keys(problemsProbability)) {
+                problemsProbability[tag] /= 2;
             }
+
+            // pick a random tag based on their weighted probabilities
+            const randomNum = Math.random();
+            let prefix = 0;
+            let tagChosen = "";
+            for (const tag of Object.keys(problemsProbability)) {
+                prefix += problemsProbability[tag];
+                if (prefix >= randomNum) {
+                    tagChosen = tag;
+                    break;
+                }
+            }
+
+            const possibleProblems = await prisma.Problem.findMany({
+                where: {
+                    rating: {
+                        gte: ratingStart,
+                        lte: ratingEnd,
+                    },
+                    tags: {
+                        has: tagChosen,
+                    },
+                },
+            });
+
+            await prisma.User.update({
+                where: { username },
+                data: { assignedProblemId: possibleProblems[Math.floor(Math.random() * possibleProblems.length)].id },
+            });
+        } catch (error) {
+            return error;
         }
-
-        const possibleProblems = await prisma.Problem.findMany({
-            where: {
-                rating: {
-                    gte: ratingStart,
-                    lte: ratingEnd,
-                },
-                tags: {
-                    has: tagChosen,
-                },
-            },
-        });
-
-        return possibleProblems[Math.floor(Math.random() * possibleProblems.length)];
     }
 
     static getProblemsProbabilityOnRatingRange(metadata, ratingStart, ratingEnd, tagsChosen) {
