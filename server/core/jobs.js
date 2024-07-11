@@ -19,6 +19,7 @@ const cfWorker = new Worker(
         console.log(job.data);
         switch (job.data.fn) {
             case "UPDATE_PROBLEM":
+                updateProblemsData();
                 break;
             case "UPDATE_USER":
                 updateUserData(job.data.username);
@@ -41,10 +42,9 @@ const cfWorker = new Worker(
 );
 
 /*
-CF Worker jobs. 
+CF Worker jobs:
 Any job that uses CF API should be executed through cfWorker due to API limit
 */
-
 const linkCF = async (username, handle) => {
     // Error handling: is username already linked
     const potentialUserHasHandle = await prisma.User.findUnique({
@@ -119,6 +119,9 @@ const linkCF = async (username, handle) => {
         },
     });
 
+    // create a new job to make sure user data is fresh
+    cfQueue.add("update user", { fn: "UPDATE_USER", username }, { repeat: { cron: "0 0 * * *" }, priority: 1 });
+
     SSE.sendUsernameUpdate(username, {
         job: "LINK_USER",
         status: "OK",
@@ -143,4 +146,11 @@ const updateUserData = async (username) => {
 
     SSE.sendUsernameUpdate(username, { job: "UPDATE_USER", status: "OK" });
 };
+
+const updateProblemsData = async () => {
+    // this function shouldn't send a update to the user because there is a chance
+    // that the user is currently looking at the list
+    await Data.updateProblemsData();
+}
+
 module.exports = { cfQueue, cfWorker };
