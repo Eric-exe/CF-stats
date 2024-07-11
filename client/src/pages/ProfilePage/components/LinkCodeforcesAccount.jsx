@@ -13,6 +13,7 @@ function LinkCodeforcesAccount(props) {
     const [statusIsGood, setStatusIsGood] = useState(true); // determines the color of the status
     const [potentialHandle, setPotentialHandle] = useState("");
     const [key, setKey] = useState("");
+    const [isLinking, setIsLinking] = useState(false); // linking visual
 
     const genKey = async () => {
         const data = await API.getCFLinkKey(props.JWT).then((response) => response.json());
@@ -25,12 +26,14 @@ function LinkCodeforcesAccount(props) {
     };
 
     const handleCFLink = () => {
+        setIsLinking(true);
         API.linkCF(potentialHandle, props.JWT).then((response) => response.json());
     };
 
     // handle response
     useEffect(() => {
         if (props.linkResponse) {
+            setIsLinking(false);
             if (props.linkResponse.status === "OK") {
                 setStatus("Handle linked!");
                 setStatusIsGood(true);
@@ -103,6 +106,11 @@ function LinkCodeforcesAccount(props) {
                             )}
                         </div>
                         <div className="modal-footer">
+                            {
+                                isLinking ? 
+                                <div className="spinner-border spinner-border-sm" role="status"/> :
+                                <></>
+                            }
                             <button type="button" className="btn btn-outline-dark" onClick={handleCFLink}>
                                 Link Account
                             </button>

@@ -17,10 +17,10 @@
 - [x] Implement the question suggestion algorithm (should adjust the estimated Elo on whether a user can solve it and their attempts)
 - [x] Add problem refresh
 - [x] Suggestion Problems - Implement topic targetted & Elo targetted
-- [ ] Get started with BullMQ task schedulers to constantly update information of users and questions if data is too old (updating every day)
+- [x] Get started with BullMQ task schedulers to constantly update information of users and questions if data is too old (updating every day)
 
 ### Week 7
-- [ ] Finish task schedulers if necessary
+- [x] Finish task schedulers if necessary
 - [ ] Create a questions list with Elo, topic tags, and link them to said questions. Implement search, sorts, and filters. Update status of question if solved
 - [ ] Get starteted with resources board
 
