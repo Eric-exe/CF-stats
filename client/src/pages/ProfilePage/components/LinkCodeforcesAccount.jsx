@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import API from "../../../api.js";
 import propTypes from "prop-types";
 
 LinkCodeforcesAccount.propTypes = {
     profileUsername: propTypes.string.isRequired,
     JWT: propTypes.string.isRequired,
+    linkResponse: propTypes.object.isRequired,
 };
 
 function LinkCodeforcesAccount(props) {
@@ -12,33 +13,43 @@ function LinkCodeforcesAccount(props) {
     const [statusIsGood, setStatusIsGood] = useState(true); // determines the color of the status
     const [potentialHandle, setPotentialHandle] = useState("");
     const [key, setKey] = useState("");
+    const [isLinking, setIsLinking] = useState(false); // linking visual
 
     const genKey = async () => {
         const data = await API.getCFLinkKey(props.JWT).then((response) => response.json());
         if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
             setStatus(data.error);
             setKey("N/A");
-        }
-        else {
+        } else {
             setKey(data["key"]);
         }
     };
 
-    const handleCFLink = async () => {
-        const data = await API.linkCF(potentialHandle, props.JWT).then((response) => response.json());
-        if (Object.prototype.hasOwnProperty.call(data, "Error")) {
-            // linking failed
-            setStatus(data.Error);
-            setStatusIsGood(false);
-        } else {
-            // linking successful, update and display user info
-            setStatus("Handle linked!");
-            setStatusIsGood(true);
-            bootstrap.Modal.getInstance(document.getElementById("cfLinkModal")).hide();
-            setPotentialHandle("");
-            await API.updateUserInfo(props.profileUsername);
-        }
+    const handleCFLink = () => {
+        setIsLinking(true);
+        API.linkCF(potentialHandle, props.JWT).then((response) => response.json());
     };
+
+    // handle response
+    useEffect(() => {
+        if (props.linkResponse) {
+            setIsLinking(false);
+            if (props.linkResponse.status === "OK") {
+                setStatus("Handle linked!");
+                setStatusIsGood(true);
+
+                const modalInstance = bootstrap.Modal.getInstance(document.getElementById("cfLinkModal"));
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+                setPotentialHandle("");
+                API.updateUserInfo(props.profileUsername);
+            } else {
+                setStatus(props.linkResponse.Error);
+                setStatusIsGood(false);
+            }
+        }
+    }, [props.linkResponse]);
 
     return (
         <>
@@ -95,6 +106,11 @@ function LinkCodeforcesAccount(props) {
                             )}
                         </div>
                         <div className="modal-footer">
+                            {
+                                isLinking ? 
+                                <div className="spinner-border spinner-border-sm" role="status"/> :
+                                <></>
+                            }
                             <button type="button" className="btn btn-outline-dark" onClick={handleCFLink}>
                                 Link Account
                             </button>

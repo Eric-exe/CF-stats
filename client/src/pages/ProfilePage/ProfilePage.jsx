@@ -21,7 +21,8 @@ function ProfilePage(props) {
     const [profileInfo, setProfileInfo] = useState(null);
     const [generalStatusMsg, setGeneralStatusMsg] = useState("Loading...");
 
-    // update relevant data whenever user is updated
+    const [linkResponse, setLinkResponse] = useState({});
+
     useEffect(() => {
         const updateProfileInfo = async () => {
             if (props.userInfo.username === profileUsername) {
@@ -37,29 +38,45 @@ function ProfilePage(props) {
         updateProfileInfo();
     }, [profileUsername, props.userInfo]);
 
-    // Use SSEs to always display the latest data, such as when data is refreshed by another user
+    // Use SSEs to always display the latest data in realtime.
     useEffect(() => {
-        const sse = new EventSource(`http://localhost:3000/user/sse/${profileUsername}`);
-        const getUpdatedData = async () => {
-            const data = await API.getUserInfo(profileUsername).then((response) => response.json());
-            setProfileInfo(data);
-            if (props.userInfo.username == profileUsername) {
-                props.userInfoSetter(data);
-            }
-        };
-        sse.onmessage = () => {
-            getUpdatedData();
+        let sse = new EventSource(`http://localhost:3000/user/sse/${profileUsername}`);
+        sse.onmessage = (e) => {
+            getUpdatedData(e);
         };
 
         sse.onerror = (e) => {
             console.error(e);
             sse.close();
+            sse = new EventSource(`http://localhost:3000/user/sse/${profileUsername}`);
+        };
+
+        const getUpdatedData = async (e) => {
+            const data = JSON.parse(e.data);
+
+            // general user update response
+            if (data.job === "UPDATE_USER") {
+                const userData = await API.getUserInfo(profileUsername).then((response) => response.json());
+                setProfileInfo(userData);
+                if (props.userInfo.username === profileUsername) {
+                    props.userInfoSetter(userData);
+                }
+            }
+
+            // linking response
+            if (data.job === "LINK_USER") {
+                setLinkResponse(data);
+            }
         };
 
         return () => {
             sse.close();
         };
-    }, [props.userInfo.username]);
+    }, [profileUsername, props.userInfo.username]);
+
+    const refreshPage = () => {
+        API.updateUserInfo(profileUsername);
+    };
 
     return (
         <>
@@ -86,6 +103,7 @@ function ProfilePage(props) {
                                             JWT={props.JWT}
                                             userInfoSetter={props.userInfoSetter}
                                             profileInfoSetter={setProfileInfo}
+                                            linkResponse={linkResponse}
                                         />
                                     ) : (
                                         <></>
@@ -100,18 +118,23 @@ function ProfilePage(props) {
                                 <div className="d-flex col-lg-3 justify-content-between">
                                     <div className="d-flex my-auto flex-wrap">
                                         <b className="text-nowrap">Last updated:&nbsp;</b>
-                                        {new Date(profileInfo.lastUpdated).toLocaleString()}
+                                        {profileInfo.handle !== null ? <>{new Date(profileInfo.lastUpdated).toLocaleString()}</> : <></>}
                                     </div>
                                     <div className="my-auto">
-                                        <button className="btn btn-sm btn-outline-dark">
-                                            {!profileInfo.isUpdating ? (
-                                                <i className="bi bi-arrow-clockwise"></i>
+                                        {/* Only display refresh button if there is a handle attached */}
+                                        {profileInfo.handle !== null ? (
+                                            profileInfo.isUpdating ? (
+                                                <button className="btn btn-sm btn-outline-dark">
+                                                    <div className="spinner-border spinner-border-sm" role="status"></div>
+                                                </button>
                                             ) : (
-                                                <div className="spinner-border spinner-border-sm" role="status">
-                                                    <span className="sr-only" />
-                                                </div>
-                                            )}
-                                        </button>
+                                                <button className="btn btn-sm btn-outline-dark" onClick={refreshPage}>
+                                                    <i className="h6 bi bi-arrow-clockwise"></i>
+                                                </button>
+                                            )
+                                        ) : (
+                                            <></>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -122,12 +145,7 @@ function ProfilePage(props) {
                         ) : (
                             <>
                                 {pageMode === "owner" ? (
-                                    <SuggestedProblemCard
-                                        userInfo={props.userInfo}
-                                        userInfoSetter={props.userInfoSetter}
-                                        JWT={props.JWT}
-                                        JWTSetter={props.JWTSetter}
-                                    />
+                                    <SuggestedProblemCard userInfo={props.userInfo} JWT={props.JWT} JWTSetter={props.JWTSetter} />
                                 ) : (
                                     <></>
                                 )}
