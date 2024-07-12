@@ -148,8 +148,6 @@ const updateUserData = async (username) => {
 };
 
 const updateProblemsData = async () => {
-    // this function shouldn't send a update to the user because there is a chance
-    // that the user is currently looking at the list
     await Data.updateProblemsData();
 }
 

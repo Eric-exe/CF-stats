@@ -11,6 +11,9 @@ class CodeforcesAPI {
         });
     }
 
+    /*
+    Fetches user's submission data from CF API and writes it to the database.
+    */
     static async fetchUserData(username) {
         const user = await prisma.User.findUnique({ where: { username } });
         if (!user || !user.handle) {
@@ -51,6 +54,9 @@ class CodeforcesAPI {
         }
     }
 
+    /*
+    Fetches all of the problems from CF API's problemset and writes it to database.
+    */
     static async fetchProblemsData() {
         try {
             const data = await this.get("https://codeforces.com/api/problemset.problems").then((response) => response.json());
@@ -87,7 +93,9 @@ class CodeforcesAPI {
         }
     }
 
-    // not the same as user data as this stores general user info like name, not submissions
+    /*
+    Fetches user info (firstname, lastname, rating, etc...) from CF API and returns it as a object.
+    */
     static async fetchUserInfo(handle) {
         try {
             const data = await this.get(`https://codeforces.com/api/user.info?handles=${handle}`).then((response) => response.json());

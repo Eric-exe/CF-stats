@@ -1,6 +1,10 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 
+/*
+Decrypts the JWT and stores the user info inside the request.
+If JWT doesn't exist or is bad, send respective JWT error.
+*/
 function authenticateJWT(req, res, next) {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(" ")[1];

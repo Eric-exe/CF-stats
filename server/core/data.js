@@ -7,7 +7,26 @@ const SCORES = [1, 0.75, 0.5, 0.25, 0];
 const K = 20;
 
 class Data {
-    // should not be used unless called from a job with rate limit
+    /*
+    SHOULD NOT CALLED DIRECTLY EXCEPT FROM A CF LIMITER QUEUE
+
+    Updates the latest user data by fetching and writing relevant data via CodeforcesAPI.js
+    and then processes said data, writing results to database.
+
+    Processes:
+    - UserProblemStatus (prisma model) for each problem:
+        - lastAttempted: the most recent submission time of problem
+        - submissions: total submission count of a problem
+        - AC: total AC count of a problem
+    - total problems ACed
+    - total submissions count
+    - total AC count (a problem can have multiple ACs)
+    - tagsFrequency: number of problems a user has attempted under a certain tag (Ex: { "dp": 24 })
+    - tagsDifficulty: sum of user rated difficulty under a certain tag. 
+        (Users can rate difficulty of problems and the rating would be summed up and grouped via problem tag)
+    - past 60 day submissions: submissions activity over the last 60 days
+    - past 60 day AC: AC activity over the last 60 days
+    */
     static async updateUserData(username) {
         await CodeforcesAPI.fetchUserData(username);
 
@@ -142,7 +161,18 @@ class Data {
         }
     }
 
-    // should not be used unless called from a job with rate limit
+    /*
+    SHOULD NOT BE CALLED DIRECTLY EXCEPT FROM A CF LIMITER QUEUE
+
+    Updates the latest problems data by fetching and writing relevant data via CodeforcesAPI.js
+    and then processes said data, writing results to database.
+
+    Processes: 
+    - ratings spread: number of problems in each rating. 
+        - Example: { "1000": 247, "1100": 456 }
+    - tags spread: number of problems in each tag in each rating range. 
+        - Example: { "1000": { "dp": 2, "greedy": 10 }, "1100": { "dp": 5, "greedy": 12 }}
+    */
     static async updateProblemsData() {
         await CodeforcesAPI.fetchProblemsData();
         const problemsRatingSpread = {};
@@ -176,6 +206,12 @@ class Data {
         });
     }
 
+    /*
+    Updates the rating difficulty change of a problem and user's estimated rating:
+    - updates tagsDifficulty, adding the difficulty rating to relevant tags
+    - updates the difficulty rating on user's problem status
+    - updates the user's new estimated rating via calculateEstimatedRating
+    */
     static async updateUserRatingDifficulty(username, problemId, newDifficultyRating) {
         try {
             const oldUserInfo = await prisma.User.findUnique({
@@ -212,6 +248,7 @@ class Data {
             return error;
         }
     }
+
 
     static async calculateEstimatedRating(username, rating) {
         let estimatedRating = rating;

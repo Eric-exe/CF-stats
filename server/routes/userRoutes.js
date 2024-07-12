@@ -24,7 +24,16 @@ const USER_INCLUDES = {
 const KEYGEN_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 const KEY_LEN = 30;
 
-// takes in GitHub code from OAuth and generates a JWT based on github username
+/*
+Uses the github code returned from logging in to GitHub to complete the OAuth process and then generates a JWT.
+The github username is encoded in the JWT so any requests needing a username can be passed via JWTs.
+
+Request body:
+{ code: The code from GitHub callback }
+
+Response:
+- { encoded: JWT }
+*/
 router.post("/createJWT", async (req, res) => {
     const { code } = req.body;
     if (code == undefined) return res.status(401).json({ error: "No code" });
@@ -60,6 +69,14 @@ router.post("/createJWT", async (req, res) => {
     return res.json({ encoded: jwt.sign({ username }, process.env.JWT_SECRET_KEY, { expiresIn: "7d" }) });
 });
 
+/*
+Return a User object (see prisma.schema) or creates one if it doesn't exist and then return it.
+
+REQUIRES the JWT to be included in Auth header.
+
+Response:
+User object
+*/
 router.get("/getOrCreateInfo", authenticateJWT, async (req, res) => {
     let userInfo = await prisma.User.upsert({
         where: { username: req.user.username },
@@ -71,35 +88,88 @@ router.get("/getOrCreateInfo", authenticateJWT, async (req, res) => {
     return res.json(userInfo);
 });
 
+/*
+Returns a User object (see prisma.schema) with username in request body.
+Frontend should make a /getInfo call every time a SSE message is sent.
+
+Request body
+{ username: username of user's info to be returned }
+
+Response:
+User object
+*/
 router.post("/getInfo", async (req, res) => {
-    let username = req.body.username || "";
-    let userInfo = await prisma.User.findUnique({
-        where: { username },
-        include: USER_INCLUDES,
-    });
-    return res.json(userInfo);
-});
-
-router.get("/keygen", authenticateJWT, async (req, res) => {
-    let key = "";
-    for (let i = 0; i < KEY_LEN; i++) {
-        key += KEYGEN_CHARS.charAt(Math.floor(Math.random() * KEYGEN_CHARS.length));
+    try {
+        let username = req.body.username || "";
+        let userInfo = await prisma.User.findUnique({
+            where: { username },
+            include: USER_INCLUDES,
+        });
+        return res.json(userInfo);
+    } catch (error) {
+        return res.json({ Error: error });
     }
-
-    await prisma.User.update({
-        where: { username: req.user.username },
-        data: { cfLinkKey: key },
-    });
-
-    return res.json({ key });
 });
 
+/*
+Generates a linking key for linking a CF account to the user's account. 
+Writes the key in user entry and then returns key in response.
+
+REQUIRES the JWT to be in auth header.
+
+Response:
+{ key: codeforces linking key }
+*/
+router.get("/keygen", authenticateJWT, async (req, res) => {
+    try {
+        let key = "";
+        for (let i = 0; i < KEY_LEN; i++) {
+            key += KEYGEN_CHARS.charAt(Math.floor(Math.random() * KEYGEN_CHARS.length));
+        }
+
+        await prisma.User.update({
+            where: { username: req.user.username },
+            data: { cfLinkKey: key },
+        });
+
+        return res.json({ key });
+    } catch (error) {
+        return res.json({ Error: error });
+    }
+});
+
+/*
+Creates a link job to link username to their CF handle. 
+See core/jobs for job implementation.
+
+REQUIRES the JWT to be in auth header.
+
+Request body:
+{ handle: the CF handle to be linked }
+
+Response:
+{ status: "OK" }
+*/
 router.post("/linkCF", authenticateJWT, async (req, res) => {
     // requires CF, needs to be in a queue
     cfQueue.add("link user", { fn: "LINK_USER", username: req.user.username, handle: req.body.handle }, { priority: 3 });
     return res.status(200).json({ status: "OK" });
 });
 
+/*
+Creates a update user job, updating the latest user data from CF API. 
+No JWT verification is needed as CF data is public info.
+See core/jobs for job implementation.
+
+Sends an SSE of user update.
+
+Request body:
+{ username: the username to be updated }
+
+Response:
+{ status: "OK" }
+
+*/
 router.post("/updateInfo", async (req, res) => {
     // requires CF, needs to be in a queue
     try {
@@ -118,6 +188,15 @@ router.post("/updateInfo", async (req, res) => {
     }
 });
 
+/*
+Updates the user's estimated rating based on the what problem id is updated and the new difficulty rating.
+
+REQUIRES the JWT to be in auth header.
+Sends an SSE of user update.
+
+Response:
+{ status: "OK" }
+*/
 router.post("/updateDifficultyRating", authenticateJWT, async (req, res) => {
     try {
         await Data.updateUserRatingDifficulty(req.user.username, req.body.problemId, req.body.newDifficultyRating);
@@ -129,6 +208,22 @@ router.post("/updateDifficultyRating", authenticateJWT, async (req, res) => {
     }
 });
 
+/*
+Generates a new suggested problem based on rating range and tags (if it exists).
+
+REQUIRES the JWT in auth header.
+Sends an SSE of user update.
+
+Request body: 
+{ 
+    username: the username to be updated
+    ratingStart: the minimum rating for the problem generated
+    ratingEnd: the maximum rating for the problem generated
+}
+
+Response:
+{ status: "OK" }
+*/
 router.post("/generateSuggestedProblem", authenticateJWT, async (req, res) => {
     try {
         await Data.generateSuggestedProblem(req.user.username, req.body.ratingStart, req.body.ratingEnd, req.body.tags || []);
@@ -140,6 +235,10 @@ router.post("/generateSuggestedProblem", authenticateJWT, async (req, res) => {
     }
 });
 
+/*
+A continuous connection for the frontend to listen to. Anytime the frontend is displaying user data,
+it should be listening to this route for realtime user data updates.
+*/
 router.get("/sse/:username", (req, res) => {
     const username = req.params.username;
     res.setHeader("Access-Control-Allow-Origin", "*");
