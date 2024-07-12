@@ -37,7 +37,9 @@ function SuggestedProblem(props) {
                     ratingEndSetter={setRatingEnd}
                     tagsSetter={setTags}
                 />
-                Note: By default, you will be suggested slightly harder problems than your current estimated rating.
+                <div className="mt-2">
+                    Note: By default, you will be suggested slightly harder problems than your current estimated rating.
+                </div>
                 <hr />
                 <div className="d-flex align-items-center overflow-auto mt-3">
                     <div className="me-4">Current Problem:</div>
