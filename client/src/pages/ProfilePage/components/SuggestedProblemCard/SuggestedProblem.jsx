@@ -1,6 +1,6 @@
 import { useState } from "react";
-import Filter from "../../../../../components/Filter";
-import API from "../../../../../api";
+import Filter from "../../../../components/Filter";
+import API from "../../../../api";
 import propTypes from "prop-types";
 
 SuggestedProblem.propTypes = {
@@ -15,7 +15,7 @@ function SuggestedProblem(props) {
     const [tags, setTags] = useState([]);
 
     const handleChangeProblemClick = async () => {
-        const data = await API.generatedSuggestedProblem(
+        const data = API.generatedSuggestedProblem(
             props.JWT,
             ratingStart === "" ? -1 : ratingStart,
             ratingEnd === "" ? -1 : ratingEnd,

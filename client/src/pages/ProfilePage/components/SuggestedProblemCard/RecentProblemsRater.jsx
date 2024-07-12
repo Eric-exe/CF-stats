@@ -1,5 +1,5 @@
 import "./RecentProblemsRater.css";
-import API from "../../../../../api";
+import API from "../../../../api";
 import propTypes from "prop-types";
 
 RecentProblemsRater.propTypes = {
