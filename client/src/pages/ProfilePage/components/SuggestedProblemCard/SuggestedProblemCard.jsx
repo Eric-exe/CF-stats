@@ -1,5 +1,5 @@
-import SuggestedProblem from "./components/SuggestedProblem";
-import RecentProblemsRater from "./components/RecentProblemsRater";
+import SuggestedProblem from "./SuggestedProblem";
+import RecentProblemsRater from "./RecentProblemsRater";
 import propTypes from "prop-types";
 
 SuggestedProblemCard.propTypes = {

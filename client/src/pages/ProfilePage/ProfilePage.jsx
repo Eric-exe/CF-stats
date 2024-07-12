@@ -5,7 +5,7 @@ import API from "../../api";
 import LinkCodeforcesAccount from "./components/LinkCodeforcesAccount";
 import SuggestedProblemCard from "./components/SuggestedProblemCard/SuggestedProblemCard";
 import ProblemStatsCard from "./components/ProblemStatsCard";
-import ActivityGraphStatsCard from "./components/ActivityGraphStatsCard";
+import ActivityGraphStatsCard from "./components/ActivityGraphStatsCard/ActivityGraphStatsCard";
 import SubmissionsStatsCard from "./components/SubmissionsStatsCard";
 
 ProfilePage.propTypes = {
