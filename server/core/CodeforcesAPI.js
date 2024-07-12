@@ -24,20 +24,12 @@ class CodeforcesAPI {
         }
 
         for (const submission of data.result) {
-            // check if submission exists, if it does, that means everything after it also exists
-            const existingSubmission = await prisma.Submission.findUnique({
-                where: { id: submission.id },
-            });
-
-            if (existingSubmission !== null) {
-                break;
-            }
-
             const problemId = `${submission.problem.contestId}-${submission.problem.index}`;
 
             try {
-                await prisma.Submission.create({
-                    data: {
+                await prisma.Submission.upsert({
+                    where: { id: submission.id },
+                    create: {
                         id: submission.id,
                         authorUsername: username,
                         problemId,
@@ -47,32 +39,14 @@ class CodeforcesAPI {
                         timeUsed: submission.timeConsumedMillis,
                         memoryUsed: submission.memoryConsumedBytes,
                     },
+                    update: {
+                        verdict: submission.verdict,
+                        timeUsed: submission.timeConsumedMillis,
+                        memoryUsed: submission.memoryConsumedBytes,
+                    }
                 });
             } catch (error) {
                 console.error("[Update submission error]: ", error); // most likely the problem doesn't exist in problems API
-            }
-
-            // Update the user's problem status
-            try {
-                // create a status if it doesn't exist and update submission + AC count
-                await prisma.UserProblemStatus.upsert({
-                    where: {
-                        username_problemId: { username, problemId },
-                    },
-                    create: {
-                        user: { connect: { username } },
-                        problem: { connect: { id: problemId } },
-                        lastAttempted: new Date(submission.creationTimeSeconds * 1000),
-                        submissions: 1,
-                        AC: submission.verdict === "OK" ? 1 : 0,
-                    },
-                    update: {
-                        submissions: { increment: 1 },
-                        AC: { increment: submission.verdict === "OK" ? 1 : 0 },
-                    },
-                });
-            } catch (error) {
-                console.error("[Update user problem status error]: ", error); // most likely the problem doesn't exist in problems API
             }
         }
     }
@@ -87,25 +61,22 @@ class CodeforcesAPI {
             // update database with info
             for (const problem of data.result.problems) {
                 try {
-                    const problemId = `${problem.contestId}-${problem.index}`;
-                    // check if question exists quit if it does, as API lists in descending order
-                    const existingProblem = await prisma.Problem.findUnique({
-                        where: { id: problemId },
-                    });
+                    const id = `${problem.contestId}-${problem.index}`;
 
-                    if (existingProblem !== null) {
-                        continue;
-                    }
-
-                    await prisma.Problem.create({
-                        data: {
-                            id: problemId,
+                    await prisma.Problem.upsert({
+                        where: { id },
+                        create: {
+                            id,
                             contestId: problem.contestId,
                             index: problem.index,
                             name: problem.name,
                             rating: problem.rating,
                             tags: problem.tags,
                         },
+                        update: {
+                            rating: problem.rating,
+                            tags: problem.tags,
+                        }
                     });
                 } catch (error) {
                     console.error(error);
