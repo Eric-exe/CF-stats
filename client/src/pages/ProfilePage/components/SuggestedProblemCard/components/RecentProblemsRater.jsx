@@ -55,7 +55,7 @@ function RecentProblemsRater(props) {
                                             <th scope="col">Index</th>
                                             <th scope="col">Problem</th>
                                             <th scope="col">Rating</th>
-                                            <th scope="col">Topics</th>
+                                            <th scope="col">Tags</th>
                                             <th scope="col">AC/Attempted</th>
                                             <th scope="col">Difficulty</th>
                                         </tr>
