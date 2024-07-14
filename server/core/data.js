@@ -5,6 +5,7 @@ const CodeforcesAPI = require("./CodeforcesAPI");
 
 const SCORES = [1, 0.75, 0.5, 0.25, 0];
 const K = 20;
+const PAST_PROBLEMS_COUNT = 200;
 
 class Data {
     /*
@@ -26,6 +27,7 @@ class Data {
         (Users can rate difficulty of problems and the rating would be summed up and grouped via problem tag)
     - past 60 day submissions: submissions activity over the last 60 days
     - past 60 day AC: AC activity over the last 60 days
+    - time of last update
     */
     static async updateUserData(username) {
         await CodeforcesAPI.fetchUserData(username);
@@ -207,10 +209,14 @@ class Data {
     }
 
     /*
-    Updates the rating difficulty change of a problem and user's estimated rating:
-    - updates tagsDifficulty, adding the difficulty rating to relevant tags
-    - updates the difficulty rating on user's problem status
-    - updates the user's new estimated rating via calculateEstimatedRating
+    Updates the rating difficulty change of a problem and user's estimated rating 
+    based on the new rating difficulty.
+
+    Updates:
+    - tagsDifficulty, adding the difficulty rating delta (new difficulty rating - old difficulty rating) 
+      to relevant tags
+    - the difficulty rating on user's problem status
+    - the user's new estimated rating via calculateEstimatedRating
     */
     static async updateUserRatingDifficulty(username, problemId, newDifficultyRating) {
         try {
@@ -249,14 +255,18 @@ class Data {
         }
     }
 
-
+    /*
+    Calculates the user's estimated rating based on the user's recent problem status
+    and the user's estimated rating.
+    Formula is explained in design doc
+    */
     static async calculateEstimatedRating(username, rating) {
         let estimatedRating = rating;
         let recentProblemStatuses = await prisma.UserProblemStatus.findMany({
             where: { username },
             orderBy: { lastAttempted: "desc" },
             include: { problem: true },
-            take: 200,
+            take: PAST_PROBLEMS_COUNT,
         }).then((data) => data.reverse());
 
         for (const problemStatus of recentProblemStatuses) {
@@ -264,12 +274,23 @@ class Data {
                 continue;
             }
             const probabilityOfSolving = 1 / (1 + Math.pow(10, (problemStatus.problem.rating - estimatedRating) / 400));
-            estimatedRating = estimatedRating + K * (SCORES[problemStatus.userDifficultyRating - 1] - probabilityOfSolving);
+            estimatedRating =
+                estimatedRating + K * (SCORES[problemStatus.userDifficultyRating - 1] - probabilityOfSolving);
         }
 
         return estimatedRating;
     }
 
+    /*
+    Generates a suggested problem for a user based on estimated rating and difficulty rating of tags,
+    updating it in the database.
+    
+    The algorithm works as follows:
+    1. Calculate the probability of a problem being chosen based on user's difficulty rating of certain tags
+    2. Calculate the probability of a problem being chosen based on the rating range of the problem
+    3. Combine the two probabilities and pick a random tag based on the weighted probabilities
+    4. Pick a random problem based on the chosen tag and rating range
+    */
     static async generateSuggestedProblem(username, ratingStartRaw, ratingEndRaw, tagsChosen) {
         try {
             const metadata = await prisma.Metadata.findUnique({
@@ -282,12 +303,22 @@ class Data {
 
             // convert ratings so that they are divisible by 100
             const ratingStart =
-                ratingStartRaw === -1 ? Math.floor(userInfo.estimatedRating / 100) * 100 : Math.ceil(ratingStartRaw / 100) * 100;
+                ratingStartRaw === -1
+                    ? Math.floor(userInfo.estimatedRating / 100) * 100
+                    : Math.ceil(ratingStartRaw / 100) * 100;
 
             const ratingEnd = ratingEndRaw === -1 ? ratingStart + 300 : Math.floor(ratingEndRaw / 100) * 100;
 
-            const problemsProbabilityOnRatingRange = this.getProblemsProbabilityOnRatingRange(metadata, ratingStart, ratingEnd, tagsChosen);
-            const problemsProbabilityOnUserDifficulty = this.getProblemsProbabilityOnUserDifficulty(userInfo, tagsChosen);
+            const problemsProbabilityOnRatingRange = this.getProblemsProbabilityOnRatingRange(
+                metadata,
+                ratingStart,
+                ratingEnd,
+                tagsChosen
+            );
+            const problemsProbabilityOnUserDifficulty = this.getProblemsProbabilityOnUserDifficulty(
+                userInfo,
+                tagsChosen
+            );
 
             const problemsProbability = problemsProbabilityOnRatingRange;
 
@@ -335,6 +366,12 @@ class Data {
         }
     }
 
+    /*
+    Generates the probabilities of a tag being chosen based on the rating range of the problem.
+
+    Calculated by taking the number of problems in a certain rating range and tag and 
+    dividing it by the total number of problems in that rating range.
+    */
     static getProblemsProbabilityOnRatingRange(metadata, ratingStart, ratingEnd, tagsChosen) {
         // inputs into ratingStart and ratingEnd should be divisble by 100
         let problemsProbability = {};
@@ -360,6 +397,12 @@ class Data {
         return problemsProbability;
     }
 
+    /*
+    Generates the probabilities of a tag being chosen based on the user's difficulty rating of selected tags.
+
+    Calculated by taking the average difficulty rating (tagsDifficulty / tagsFrequency) of a tag 
+    and dividing it by the total average difficulty rating.
+    */
     static getProblemsProbabilityOnUserDifficulty(userInfo, tagsChosen) {
         let problemsProbability = {};
         let totalDifficulty = 0;
