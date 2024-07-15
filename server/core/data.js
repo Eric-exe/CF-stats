@@ -153,8 +153,8 @@ class Data {
                 where: { username },
                 data: {
                     problemsAC: totalProblemsAC,
-                    totalSubmissions: totalSubmissionsAndAC._sum.submissions,
-                    totalAC: totalSubmissionsAndAC._sum.AC,
+                    totalSubmissions: totalSubmissionsAndAC._sum.submissions || 0,
+                    totalAC: totalSubmissionsAndAC._sum.AC || 0,
                     tagsFrequency,
                     tagsDifficulty,
                     recentSubmissions: past60DaySubmissions,

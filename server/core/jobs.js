@@ -129,6 +129,25 @@ const linkCF = async (username, handle) => {
 };
 
 const updateUserData = async (username) => {
+    // get latest rating
+    try {
+        const userInfo = await prisma.User.findUnique({
+            where: { username }
+        });
+
+        const newHandleInfo = await CodeforcesAPI.fetchUserInfo(userInfo.handle);
+
+        await prisma.User.update({
+            where: { username },
+            data: {
+                rating: newHandleInfo.result[0].rating
+            }
+        });
+    }
+    catch (error) {
+        console.error("[Error fetching latest rating]: ", error);
+    }
+
     await Data.updateUserData(username);
 
     const user = await prisma.User.findUnique({
