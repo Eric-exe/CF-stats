@@ -53,7 +53,7 @@ function Filter(props) {
         <div className="row">
             <div className="col-6">
                 <div className="d-flex align-items-baseline">
-                    <div className="text-nowrap text-truncate">Rating Range:&nbsp;</div>
+                    <div className="text-nowrap">Rating:&nbsp;</div>
                     <div>
                         <input
                             className="form-control rating-input"
