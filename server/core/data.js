@@ -3,8 +3,12 @@ const prisma = new PrismaClient();
 
 const CodeforcesAPI = require("./CodeforcesAPI");
 
+// estimated rating consts
 const SCORES = [1, 0.75, 0.5, 0.25, 0];
 const K = 20;
+const BASE_OF_EXPONENT = 10;
+const RATING_DIFFERENCE_SCALE = 400;
+
 const PAST_PROBLEMS_COUNT = 200;
 
 class Data {
@@ -273,9 +277,8 @@ class Data {
             if (problemStatus.problem.rating == -1) {
                 continue;
             }
-            const probabilityOfSolving = 1 / (1 + Math.pow(10, (problemStatus.problem.rating - estimatedRating) / 400));
-            estimatedRating =
-                estimatedRating + K * (SCORES[problemStatus.userDifficultyRating - 1] - probabilityOfSolving);
+            const probabilityOfSolving = 1 / (1 + Math.pow(BASE_OF_EXPONENT, (problemStatus.problem.rating - estimatedRating) / RATING_DIFFERENCE_SCALE));
+            estimatedRating = estimatedRating + K * (SCORES[problemStatus.userDifficultyRating - 1] - probabilityOfSolving);
         }
 
         return estimatedRating;
@@ -303,22 +306,12 @@ class Data {
 
             // convert ratings so that they are divisible by 100
             const ratingStart =
-                ratingStartRaw === -1
-                    ? Math.floor(userInfo.estimatedRating / 100) * 100
-                    : Math.ceil(ratingStartRaw / 100) * 100;
+                ratingStartRaw === -1 ? Math.floor(userInfo.estimatedRating / 100) * 100 : Math.ceil(ratingStartRaw / 100) * 100;
 
             const ratingEnd = ratingEndRaw === -1 ? ratingStart + 300 : Math.floor(ratingEndRaw / 100) * 100;
 
-            const problemsProbabilityOnRatingRange = this.getProblemsProbabilityOnRatingRange(
-                metadata,
-                ratingStart,
-                ratingEnd,
-                tagsChosen
-            );
-            const problemsProbabilityOnUserDifficulty = this.getProblemsProbabilityOnUserDifficulty(
-                userInfo,
-                tagsChosen
-            );
+            const problemsProbabilityOnRatingRange = this.getProblemsProbabilityOnRatingRange(metadata, ratingStart, ratingEnd, tagsChosen);
+            const problemsProbabilityOnUserDifficulty = this.getProblemsProbabilityOnUserDifficulty(userInfo, tagsChosen);
 
             const problemsProbability = problemsProbabilityOnRatingRange;
 
