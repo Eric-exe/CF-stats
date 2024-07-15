@@ -1,69 +1,49 @@
-import { useState } from "react";
-import Filter from "../../components/Filter";
+import { useState, useEffect } from "react";
+import { AgGridReact } from "ag-grid-react";
+import LinkRenderer from "../../components/LinkRenderer";
+import TagsRenderer from "../../components/TagsRenderer";
+import API from "../../api";
 
 function ProblemsPage() {
-    const [ratingStart, setRatingStart] = useState("");
-    const [ratingEnd, setRatingEnd] = useState("");
-    const [tags, setTags] = useState([]);
+    const [rowData, setRowData] = useState([]);
+
+    const columnDefs = [
+        { field: "contestId", headerName: "Contest ID", sortable: true, filter: true },
+        { field: "index", headerName: "Index", sortable: true, filter: true },
+        {
+            field: "name",
+            headerName: "Name",
+            sortable: true,
+            filter: true,
+            flex: 1,
+            cellRenderer: LinkRenderer,
+        },
+        { field: "rating", headerName: "Rating", sortable: true, filter: true },
+        { field: "tags", headerName: "Tags", sortable: false, filter: true, flex: 1, cellRenderer: TagsRenderer },
+    ];
+
+    useEffect(() => {
+        const getProblemsData = async () => {
+            const problemsData = await API.getProblemsData().then((response) => response.json());
+            const data = problemsData.map((problem) => ({
+                contestId: problem.contestId,
+                index: problem.index,
+                name: problem.name,
+                rating: problem.rating,
+                tags: problem.tags,
+            }));
+            setRowData(data);
+        };
+        getProblemsData();
+    }, []);
 
     return (
         <div className="card shadow m-4">
             <div className="card-header overflow-auto">Problems</div>
-            <div className="card-body">
-                <div className="row">
-                    <div className="col-lg-5 d-flex align-items-baseline">
-                        Search:&nbsp;
-                        <div className="flex-grow-1">
-                            <input className="form-control" type="text" placeholder="Problem name" />
-                        </div>
-                    </div>
-                    <div className="col-lg-7 mt-lg-0 mt-2">
-                        <Filter
-                            ratingStart={ratingStart}
-                            ratingStartSetter={setRatingStart}
-                            ratingEnd={ratingEnd}
-                            ratingEndSetter={setRatingEnd}
-                            tagsSetter={setTags}
-                        />
-                    </div>
+            <div className="body d-flex justify-content-center align-items-center p-4">
+                <div className="ag-theme-alpine" style={{ height: "75vh", width: "95vw" }}>
+                    <AgGridReact columnDefs={columnDefs} rowData={rowData} />
                 </div>
-
-                <table className="table table-striped mt-3">
-                    <thead>
-                        <tr>
-                            <th scope="col">
-                                <div className="d-flex text-nowrap justify-content-between">
-                                    Contest ID
-                                    <i className="bi bi-caret-down-fill"></i>
-                                </div>
-                            </th>
-                            <th scope="col">
-                                <div className="d-flex text-nowrap justify-content-between">
-                                    Index
-                                    <i className="bi bi-caret-down-fill"></i>
-                                </div>
-                            </th>
-                            <th scope="col">
-                                <div className="d-flex text-nowrap justify-content-between">
-                                    Problem
-                                    <i className="bi bi-caret-down-fill"></i>
-                                </div>
-                            </th>
-
-                            <th scope="col">Rating</th>
-                            <th scope="col">Tags</th>
-                        </tr>
-                    </thead>
-                    <tbody className="table-group-divider" style={{"maxWidth": "100vh"}}>
-                        <tr>
-                            <td>DUMMY_DATA_1</td>
-                            <td>DUMMY_DATA_2</td>
-                            <td>DUMMY_DATA_3</td>
-                            <td>DUMMY_DATA_4</td>
-                            <td>DUMMY_DATA_4</td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
     );
