@@ -49,7 +49,7 @@ function App() {
                 <NavBar userInfo={userInfo} />
                 <Routes>
                     <Route index element={<HomePage />} />
-                    <Route path="problems" element={<ProblemsPage />} />
+                    <Route path="problems" element={<ProblemsPage userInfo={userInfo}/>} />
                     <Route path="resources" element={<ResourcesPage />} />
                     <Route
                         path="profile/:profileUsername"
