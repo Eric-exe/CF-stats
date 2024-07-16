@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
-import LinkRenderer from "../../components/LinkRenderer";
+import ProblemLinkRenderer from "../../components/ProblemLinkRenderer";
 import TagsRenderer from "../../components/TagsRenderer";
 import API from "../../api";
 import propTypes from "prop-types";
@@ -20,7 +20,7 @@ function ProblemsPage(props) {
     const columnDefs = [
         { field: "contestId", headerName: "Contest ID", sortable: true, filter: true, filterParams },
         { field: "index", headerName: "Index", sortable: true, filter: true, filterParams },
-        { field: "name", headerName: "Name", sortable: true, filter: true, flex: 1, cellRenderer: LinkRenderer, filterParams },
+        { field: "name", headerName: "Name", sortable: true, filter: true, flex: 1, cellRenderer: ProblemLinkRenderer, filterParams },
         { field: "rating", headerName: "Rating", sortable: true, filter: true, filterParams },
         { field: "tags", headerName: "Tags", sortable: false, filter: true, flex: 1, cellRenderer: TagsRenderer, filterParams },
     ];
