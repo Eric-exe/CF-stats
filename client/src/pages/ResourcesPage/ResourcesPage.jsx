@@ -1,7 +1,9 @@
+import ResourcesBar from "./ResourcesBar";
+
 function ResourcesPage() {
     return (
-        <div className="card shadow m-4">
-            <b>Resources</b>
+        <div className="container-fluid">
+            <ResourcesBar/>
         </div>
     );
 }

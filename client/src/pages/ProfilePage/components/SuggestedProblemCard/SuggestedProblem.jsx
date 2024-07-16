@@ -36,7 +36,7 @@ function SuggestedProblem(props) {
                             <div className="text-nowrap">Rating:&nbsp;</div>
                             <div>
                                 <input
-                                    className="form-control rating-input"
+                                    className="form-control"
                                     type="number"
                                     value={ratingStart}
                                     onChange={(event) => setRatingStart(event.target.value)}
@@ -45,7 +45,7 @@ function SuggestedProblem(props) {
                             <div className="text-nowrap">&nbsp;-&nbsp;</div>
                             <div>
                                 <input
-                                    className="form-control rating-input"
+                                    className="form-control"
                                     type="number"
                                     value={ratingEnd}
                                     onChange={(event) => setRatingEnd(event.target.value)}
