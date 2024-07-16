@@ -41,39 +41,12 @@ const OPTIONS = [
 ];
 
 Filter.propTypes = {
-    ratingStart: propTypes.string.isRequired,
-    ratingStartSetter: propTypes.func.isRequired,
-    ratingEnd: propTypes.string.isRequired,
-    ratingEndSetter: propTypes.func.isRequired,
     tagsSetter: propTypes.func.isRequired,
 };
 
 function Filter(props) {
     return (
-        <div className="row">
-            <div className="col-6">
-                <div className="d-flex align-items-baseline">
-                    <div className="text-nowrap">Rating:&nbsp;</div>
-                    <div>
-                        <input
-                            className="form-control rating-input"
-                            type="number"
-                            value={props.ratingStart}
-                            onChange={(event) => props.ratingStartSetter(event.target.value)}
-                        />
-                    </div>
-                    <div className="text-nowrap">&nbsp;-&nbsp;</div>
-                    <div>
-                        <input
-                            className="form-control rating-input"
-                            type="number"
-                            value={props.ratingEnd}
-                            onChange={(event) => props.ratingEndSetter(event.target.value)}
-                        />
-                    </div>
-                </div>
-            </div>
-            <div className="col-6 d-flex align-items-baseline">
+            <div className="d-flex align-items-baseline">
                 Tags:&nbsp;
                 <Select
                     options={OPTIONS}
@@ -82,7 +55,6 @@ function Filter(props) {
                     onChange={(tags) => props.tagsSetter(tags.map((tag) => tag.value))}
                 />
             </div>
-        </div>
     );
 }
 

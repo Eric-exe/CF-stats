@@ -20,7 +20,7 @@ function SuggestedProblem(props) {
             ratingStart === "" ? -1 : ratingStart,
             ratingEnd === "" ? -1 : ratingEnd,
             tags
-        ).then(response => response.json());
+        ).then((response) => response.json());
 
         if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
             props.JWTSetter("");
@@ -30,13 +30,33 @@ function SuggestedProblem(props) {
     return (
         <div className="card mb-3">
             <div className="card-body">
-                <Filter
-                    ratingStart={ratingStart}
-                    ratingStartSetter={setRatingStart}
-                    ratingEnd={ratingEnd}
-                    ratingEndSetter={setRatingEnd}
-                    tagsSetter={setTags}
-                />
+                <div className="row">
+                    <div className="col-6">
+                        <div className="d-flex align-items-baseline">
+                            <div className="text-nowrap">Rating:&nbsp;</div>
+                            <div>
+                                <input
+                                    className="form-control rating-input"
+                                    type="number"
+                                    value={ratingStart}
+                                    onChange={(event) => setRatingStart(event.target.value)}
+                                />
+                            </div>
+                            <div className="text-nowrap">&nbsp;-&nbsp;</div>
+                            <div>
+                                <input
+                                    className="form-control rating-input"
+                                    type="number"
+                                    value={ratingEnd}
+                                    onChange={(event) => setRatingEnd(event.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-6">
+                        <Filter tagsSetter={setTags} />
+                    </div>
+                </div>
                 <div className="mt-2">
                     Note: By default, you will be suggested slightly harder problems than your current estimated rating.
                 </div>
