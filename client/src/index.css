@@ -9,3 +9,15 @@
 a {
   text-decoration: none;
 }
+
+.ag-theme-alpine {
+  font-size: 1rem;
+}
+
+.ag-theme-alpine .ag-cell {
+  font-size: 1rem;
+}
+
+.ag-theme-alpine .ag-row-even {
+  background-color: rgb(0, 0, 0, 0.05); 
+}

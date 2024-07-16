@@ -50,22 +50,22 @@ Filter.propTypes = {
 
 function Filter(props) {
     return (
-        <div className="row mb-2">
+        <div className="row">
             <div className="col-6">
-                <div className="d-flex align-items-center">
-                    Rating Range:&nbsp;
+                <div className="d-flex align-items-baseline">
+                    <div className="text-nowrap">Rating:&nbsp;</div>
                     <div>
                         <input
-                            className="form-control"
+                            className="form-control rating-input"
                             type="number"
                             value={props.ratingStart}
                             onChange={(event) => props.ratingStartSetter(event.target.value)}
                         />
                     </div>
-                    &nbsp;-&nbsp;
+                    <div className="text-nowrap">&nbsp;-&nbsp;</div>
                     <div>
                         <input
-                            className="form-control"
+                            className="form-control rating-input"
                             type="number"
                             value={props.ratingEnd}
                             onChange={(event) => props.ratingEndSetter(event.target.value)}
@@ -73,7 +73,8 @@ function Filter(props) {
                     </div>
                 </div>
             </div>
-            <div className="col-6 d-flex align-items-center">
+            <div className="col-6 d-flex align-items-baseline">
+                Tags:&nbsp;
                 <Select
                     options={OPTIONS}
                     isMulti

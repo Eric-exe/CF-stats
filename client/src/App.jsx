@@ -8,6 +8,8 @@ import ProblemsPage from "./pages/ProblemsPage/ProblemsPage.jsx";
 import ResourcesPage from "./pages/ResourcesPage/ResourcesPage.jsx";
 import ProfilePage from "./pages/ProfilePage/ProfilePage.jsx";
 import GitHubOAuthCallbackPage from "./pages/GitHubOAuthCallbackPage/GitHubOAuthCallbackPage.jsx";
+import 'ag-grid-community/styles/ag-grid.css'; 
+import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 function App() {
     const [JWT, setJWT] = useState("");
@@ -47,7 +49,7 @@ function App() {
                 <NavBar userInfo={userInfo} />
                 <Routes>
                     <Route index element={<HomePage />} />
-                    <Route path="problems" element={<ProblemsPage />} />
+                    <Route path="problems" element={<ProblemsPage userInfo={userInfo}/>} />
                     <Route path="resources" element={<ResourcesPage />} />
                     <Route
                         path="profile/:profileUsername"

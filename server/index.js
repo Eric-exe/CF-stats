@@ -7,6 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/user", require("./routes/userRoutes"));
+app.use("/problems", require("./routes/problemsRoutes"));
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();

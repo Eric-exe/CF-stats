@@ -49,6 +49,10 @@ class API {
     static generatedSuggestedProblem(JWT, ratingStart, ratingEnd, tags) {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/user/generateSuggestedProblem", "POST", JSON.stringify({ ratingStart, ratingEnd, tags }), JWT);
     }
+
+    static getProblemsData() {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/problems/getData", "GET", "", "");
+    }
 }
 
 export default API;
