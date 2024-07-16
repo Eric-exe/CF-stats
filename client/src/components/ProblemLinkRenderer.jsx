@@ -1,10 +1,10 @@
 import propTypes from "prop-types";
 
-ProblemsLinkRenderer.propTypes = {
+ProblemLinkRenderer.propTypes = {
     data: propTypes.object.isRequired,
 }
 
-function ProblemsLinkRenderer(params) {
+function ProblemLinkRenderer(params) {
     return (
         <a href={`https://codeforces.com/contest/${params.data.contestId}/problem/${params.data.index}`}>
             {params.data.name}
@@ -12,4 +12,4 @@ function ProblemsLinkRenderer(params) {
     );
 }
 
-export default ProblemsLinkRenderer;
+export default ProblemLinkRenderer;

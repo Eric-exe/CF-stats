@@ -145,7 +145,12 @@ function ProfilePage(props) {
                         ) : (
                             <>
                                 {pageMode === "owner" ? (
-                                    <SuggestedProblemCard userInfo={props.userInfo} JWT={props.JWT} JWTSetter={props.JWTSetter} />
+                                    <SuggestedProblemCard
+                                        userInfo={props.userInfo}
+                                        userInfoSetter={props.userInfoSetter}
+                                        JWT={props.JWT}
+                                        JWTSetter={props.JWTSetter}
+                                    />
                                 ) : (
                                     <></>
                                 )}

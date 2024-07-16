@@ -1,4 +1,8 @@
 import "./RecentProblemsRater.css";
+import { useState, useEffect } from "react";
+import { AgGridReact } from "ag-grid-react";
+import ProblemLinkRenderer from "../../../../components/ProblemLinkRenderer";
+import TagsRenderer from "../../../../components/TagsRenderer";
 import API from "../../../../api";
 import propTypes from "prop-types";
 
@@ -8,15 +12,89 @@ RecentProblemsRater.propTypes = {
     JWTSetter: propTypes.func.isRequired,
 };
 
+const MAX_PROBLEMS_RATED = 200;
+
 function RecentProblemsRater(props) {
-    const handleRatingChange = async (event, problemId) => {
-        try {
-            const data = await API.updateDifficultyRating(props.JWT, problemId, event.target.value).then(response => response.json());
-            if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
-                props.JWTSetter("");
+    const [gridApi, setGridApi] = useState(null);
+    const [rowData, setRowData] = useState([]);
+
+    const onGridReady = (params) => {
+        setGridApi(params.api);
+    };
+
+    // required for sliders to work
+    const gridOptions = {
+        getRowId: (params) => params.data.problemId,
+    };
+
+    const DifficultySliderRenderer = (params) => {
+        return (
+            <div className="d-flex align-items-center">
+                1&nbsp;
+                <input
+                    type="range"
+                    className="form-range rating-slider"
+                    min="1"
+                    max="5"
+                    step="1"
+                    id="range"
+                    defaultValue={params.data.difficulty}
+                    onMouseUp={(event) => handleRatingChange(event, params.data.problemId)}
+                />
+                &nbsp;5
+            </div>
+        );
+    };
+
+    const columnDefs = [
+        { field: "contestId", headerName: "Contest ID", sortable: true, filter: true },
+        { field: "index", headerName: "Index", sortable: true, filter: true },
+        { field: "name", headerName: "Problem Name", sortable: true, filter: true, cellRenderer: ProblemLinkRenderer, flex: 1 },
+        { field: "rating", headerName: "Rating", sortable: true, filter: true },
+        { field: "tags", headerName: "Tags", sortable: false, filter: true, cellRenderer: TagsRenderer, flex: 1 },
+        { field: "acAttempted", headerName: "AC/Attempted", sortable: false },
+        { field: "difficulty", headername: "Difficulty", sortable: false, cellRenderer: DifficultySliderRenderer },
+    ];
+
+    useEffect(() => {
+        if (!props.userInfo.problemStatuses) {
+            return;
+        }
+        const rows = props.userInfo.problemStatuses.slice(0, MAX_PROBLEMS_RATED).map((status) => ({
+            problemId: status.problem.id,
+            contestId: status.problem.contestId,
+            index: status.problem.index,
+            name: status.problem.name,
+            rating: status.problem.rating === -1 ? null : status.problem.rating,
+            tags: status.problem.tags,
+            acAttempted: `${status.AC}/${status.submissions} (${Math.round((status.AC / status.submissions) * 100 * 100) / 100}%)`,
+            difficulty: status.userDifficultyRating,
+        }));
+        setRowData(rows);
+    }, []);
+
+    const handleRatingChange = (event, problemId) => {
+        const updateUserDifficultyRatingInDB = async () => {
+            try {
+                const data = await API.updateDifficultyRating(props.JWT, problemId, event.target.value).then((response) => response.json());
+                if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
+                    props.JWTSetter("");
+                }
+            } catch (error) {
+                console.error(error);
             }
-        } catch (error) {
-            console.error(error);
+        }
+        updateUserDifficultyRatingInDB(event, problemId);
+
+        // update visually
+        if (!gridApi) {
+            return;
+        }
+        const rowNode = gridApi.getRowNode(problemId);
+        if (rowNode) {
+            const dataToUpdate = { ...rowNode.data, difficulty: event.target.value };
+            const transaction = { update: [dataToUpdate] };
+            gridApi.applyTransaction(transaction);
         }
     };
 
@@ -45,69 +123,13 @@ function RecentProblemsRater(props) {
                             Recommended to come back and rate the problem after you AC or give up!
                             <br />
                             Note: Problems you haven&apos;t rated are rated based on # of submissions before first AC.
-                            <div className="table-responsive" style={{ maxHeight: "45vh" }}>
-                                <table className="table table-striped mt-3">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col text" className="text-truncate">
-                                                Contest ID
-                                            </th>
-                                            <th scope="col">Index</th>
-                                            <th scope="col">Problem</th>
-                                            <th scope="col">Rating</th>
-                                            <th scope="col">Tags</th>
-                                            <th scope="col">AC/Attempted</th>
-                                            <th scope="col">Difficulty</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody className="table-group-divider" style={{ maxHeight: "45vh" }}>
-                                        {props.userInfo.problemStatuses.slice(0,200).map((problemStatus, index) => (
-                                            <tr key={index}>
-                                                <td>{problemStatus.problem.contestId}</td>
-                                                <td>{problemStatus.problem.index}</td>
-                                                <td>
-                                                    <a
-                                                        href={`https://codeforces.com/contest/${problemStatus.problem.contestId}/problem/${problemStatus.problem.index}`}
-                                                    >
-                                                        {problemStatus.problem.name}
-                                                    </a>
-                                                </td>
-                                                <td>{problemStatus.problem.rating}</td>
-                                                <td>
-                                                    <div>
-                                                        {problemStatus.problem.tags.map((tag, index) => (
-                                                            <div key={index} className="badge rounded-pill bg-secondary me-1">
-                                                                {tag}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </td>
-                                                <td className="text-truncate">
-                                                    {problemStatus.AC}/{problemStatus.submissions} (
-                                                    {Math.round((problemStatus.AC / problemStatus.submissions) * 100 * 100) / 100}%)
-                                                </td>
-
-                                                <td>
-                                                    <div className="d-flex align-items-center">
-                                                        1&nbsp;
-                                                        <input
-                                                            type="range"
-                                                            className="form-range rating-slider"
-                                                            min="1"
-                                                            max="5"
-                                                            step="1"
-                                                            id="range"
-                                                            defaultValue={problemStatus.userDifficultyRating}
-                                                            onChange={(event) => handleRatingChange(event, problemStatus.problem.id)}
-                                                        />
-                                                        &nbsp;5
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                            <div className="ag-theme-alpine mt-3" style={{ height: "45vh", width: "100%" }}>
+                                <AgGridReact
+                                    onGridReady={onGridReady}
+                                    columnDefs={columnDefs}
+                                    rowData={rowData}
+                                    gridOptions={gridOptions}
+                                />
                             </div>
                         </div>
                     </div>

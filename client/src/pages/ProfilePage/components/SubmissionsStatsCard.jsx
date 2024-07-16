@@ -22,10 +22,10 @@ function SubmissionsStatsCard(props) {
         { field: "submissionId", headerName: "Submission ID", sortable: true, filter: true, cellRenderer: SubmissionLinkRenderer },
         { field: "name", headerName: "Problem Name", sortable: true, filter: true, cellRenderer: ProblemsLinkRenderer, flex: 1},
         { field: "verdict", headerName: "Status", sortable: true, filter: true },
-        { field: "time", headerName: "Submission Time" },
-        { field: "programmingLang", headerName: "Programming Language", sortable: true, filter: true },
-        { field: "timeUsed", headername: "Time (ms)", sortable: true, filter: true },
-        { field: "memoryUsed", headerName: "Memory (kb)", sortable: true, filter: true },
+        { field: "time", headerName: "Submission Time", sortable: false },
+        { field: "programmingLang", headerName: "Programming Language", sortable: false },
+        { field: "timeUsed", headername: "Time (ms)", sortable: false },
+        { field: "memoryUsed", headerName: "Memory (kb)", sortable: false },
     ];
 
     useEffect(() => {
@@ -56,7 +56,7 @@ function SubmissionsStatsCard(props) {
             <div className="collapse show" id="submissions-stats-body">
                 <div className="container-fluid">
                     <div className="card-body d-flex justify-content-center">
-                        <div className="ag-theme-alpine" style={{ height: "45vh", width: "95vw" }}>
+                        <div className="ag-theme-alpine" style={{ height: "45vh", width: "100%" }}>
                             <AgGridReact columnDefs={columnDefs} rowData={rowData} />
                         </div>
                     </div>

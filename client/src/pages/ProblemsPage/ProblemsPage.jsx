@@ -20,7 +20,7 @@ function ProblemsPage(props) {
     const columnDefs = [
         { field: "contestId", headerName: "Contest ID", sortable: true, filter: true, filterParams },
         { field: "index", headerName: "Index", sortable: true, filter: true, filterParams },
-        { field: "name", headerName: "Name", sortable: true, filter: true, flex: 1, cellRenderer: ProblemLinkRenderer, filterParams },
+        { field: "name", headerName: "Problem Name", sortable: true, filter: true, flex: 1, cellRenderer: ProblemLinkRenderer, filterParams },
         { field: "rating", headerName: "Rating", sortable: true, filter: true, filterParams },
         { field: "tags", headerName: "Tags", sortable: false, filter: true, flex: 1, cellRenderer: TagsRenderer, filterParams },
     ];
@@ -75,7 +75,7 @@ function ProblemsPage(props) {
                 <b>Problems</b>
             </div>
             <div className="body d-flex justify-content-center align-items-center p-4">
-                <div className="ag-theme-alpine" style={{ height: "75vh", width: "95vw" }}>
+                <div className="ag-theme-alpine" style={{ height: "75vh", width: "100%" }}>
                     <AgGridReact columnDefs={columnDefs} rowData={rowData} gridOptions={gridOptions} />
                 </div>
             </div>
