@@ -21,8 +21,8 @@
 
 ### Week 7
 - [x] Finish task schedulers if necessary
-- [ ] Create a questions list with Elo, topic tags, and link them to said questions. Implement search, sorts, and filters. Update status of question if solved
-- [ ] Get starteted with resources board
+- [x] Create a questions list with Elo, topic tags, and link them to said questions. Implement search, sorts, and filters. Update status of question if solved
+- [x] Get started with resources board
 
 ### Week 8
 - [ ] Finish the resources board if necessary

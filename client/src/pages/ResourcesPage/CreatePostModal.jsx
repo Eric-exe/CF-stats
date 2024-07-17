@@ -25,8 +25,6 @@ function CreatePostModal(props) {
             setStatusMessage("Post content is required");
             return;
         }
-
-        console.log(body);
         const response = await API.createPost(props.JWT, title, body, tags).then((response) => response.json());
         if (Object.prototype.hasOwnProperty.call(response, "JWT Error")) {
             props.JWTSetter("");
