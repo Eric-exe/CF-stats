@@ -53,6 +53,14 @@ class API {
     static getProblemsData() {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/problems/getData", "GET", "", "");
     }
+
+    static getPosts(title, tags, sortBy) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/posts/get", "POST", JSON.stringify({ title, tags, sortBy }), "");
+    }
+
+    static createPost(JWT, title, body, tags) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/posts/create", "POST", JSON.stringify({ title, body, tags }), JWT);
+    }
 }
 
 export default API;

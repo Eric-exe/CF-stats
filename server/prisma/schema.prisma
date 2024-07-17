@@ -52,6 +52,8 @@ model User {
     recentSubmissions           Int[]
     recentAC                    Int[]
     posts                       Post[]
+    postsUpvoted                Post[]                  @relation("upvotedPosts")
+    postsDownvoted              Post[]                  @relation("downvotedPosts")
     lastUpdated                 DateTime                @default("1970-01-01T00:00:00.000Z")
     isUpdating                  Boolean                 @default(false)
     cfLinkKey                   String                  @default("")
@@ -88,6 +90,13 @@ model Post {
     id                          Int                     @id @default(autoincrement())
     author                      User                    @relation(fields: [authorUsername], references: [username], onDelete: Cascade)
     authorUsername              String
+    title                       String
+    body                        String 
+    tags                        String[]
+    upvotes                     User[]                  @relation("upvotedPosts")
+    downvotes                   User[]                  @relation("downvotedPosts")
+    votes                       Int                     @default(0)
+    timeCreated                 DateTime                @default(now())
 
     @@index([authorUsername])
 }
