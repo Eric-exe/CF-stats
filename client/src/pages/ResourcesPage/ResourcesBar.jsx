@@ -27,7 +27,6 @@ function ResourcesBar(props) {
 
     const getPosts = async() => {
         const response = await API.getPosts(title, tags, sortBy).then(response => response.json());
-        console.log(response);
         if (response.status === "OK") {
             props.postsSetter(response.posts);
         }
