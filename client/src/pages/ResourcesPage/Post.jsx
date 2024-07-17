@@ -2,7 +2,7 @@ import propTypes from "prop-types";
 import TagsRenderer from "../../components/TagsRenderer";
 
 Post.propTypes = {
-    data: propTypes.object.isRequired, // { id, authorUsername, title, body, tags, timeCreated, upvotes, downvotes }
+    data: propTypes.object.isRequired, // { id, authorUsername, title, body, tags, timeCreated, upvotes, downvotes, votes }
 };
 
 function Post(props) {
@@ -23,8 +23,8 @@ function Post(props) {
                                 {new Date(props.data.timeCreated).toLocaleString()}
                             </div>
                             <div className="text-end" style={{ width: "6rem" }}>
-                                {props.data.upvotes.length - props.data.downvotes.length}&nbsp;
-                                {props.data.upvotes.length >= props.data.downvotes.length ? (
+                                {props.data.votes}&nbsp;
+                                {props.data.votes >= 0 ? (
                                     <i className="h6 bi bi-caret-up-fill" />
                                 ) : (
                                     <i className="h6 bi bi-caret-down-fill" />
@@ -38,13 +38,15 @@ function Post(props) {
             <div id={`post-${props.data.id}`} className="accordion-collapse collapse" data-bs-parent="#posts-accordion">
                 <div className="accordion-body">
                     <TagsRenderer data={{ tags: props.data.tags }} />
-                    <div className="mt-2">{props.data.body}</div>
+                    <div className="mt-2">
+                        <pre style={{ whiteSpace: "pre-wrap" }}>{props.data.body}</pre>
+                    </div>
                     <hr />
 
                     <div className="d-flex justify-content-end">
-                        <i className="h5 bi bi-caret-up-fill"/>
-                        &nbsp;{props.data.upvotes.length - props.data.downvotes.length}&nbsp;
-                        <i className="h5 bi bi-caret-down-fill"/>
+                        <i className="h5 bi bi-caret-up-fill" />
+                        &nbsp;{props.data.votes}&nbsp;
+                        <i className="h5 bi bi-caret-down-fill" />
                     </div>
                 </div>
             </div>
