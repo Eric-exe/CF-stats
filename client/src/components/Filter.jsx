@@ -53,6 +53,7 @@ function Filter(props) {
                     isMulti
                     className="flex-grow-1"
                     onChange={(tags) => props.tagsSetter(tags.map((tag) => tag.value))}
+                    menuPosition="fixed" 
                 />
             </div>
     );
