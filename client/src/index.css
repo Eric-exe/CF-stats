@@ -10,6 +10,19 @@ a {
   text-decoration: none;
 }
 
+.min-width-fit-content {
+  min-width: fit-content;
+}
+
+.text-sm {
+  font-size: 0.9rem;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: rgb(0,0,0, 0.05);
+  color: black;
+}
+
 .ag-theme-alpine {
   font-size: 1rem;
 }
