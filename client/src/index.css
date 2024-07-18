@@ -34,3 +34,12 @@ a {
 .ag-theme-alpine .ag-row-even {
   background-color: rgb(0, 0, 0, 0.05); 
 }
+
+.hover-pop {
+  transition: all 0.2s;
+}
+
+.hover-pop:hover {
+  transform: scale(1.2);
+  cursor: pointer;
+}

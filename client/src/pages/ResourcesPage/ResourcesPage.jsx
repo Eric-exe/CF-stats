@@ -25,7 +25,7 @@ function ResourcesPage(props) {
             <div className="card card-body m-4 shadow">
                 <div className="accordion accordion-flush" id="posts-accordion">
                     {postsData.map((data, index) => (
-                        <Post key={index} data={data} />
+                        <Post key={index} userInfo={props.userInfo} data={data} JWT={props.JWT} JWTSetter={props.JWTSetter}/>
                     ))}
                 </div>
             </div>
