@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import propTypes from "prop-types";
 
 GraphStatsCard.propTypes = {
@@ -7,26 +8,31 @@ GraphStatsCard.propTypes = {
 };
 
 function GraphStatsCard(props) {
-    const arraySum = (array) => {
-        let res = 0;
-        for (const x of array) {
-            res += x;
-        }
-        return res;
+    const arraySum = (array) => { 
+        return array.reduce((acc, x) => acc + x, 0); 
     };
 
-    // guard to check empty array as that is the default in schema
-    let activityArray = props.activityArray;
-    if (activityArray.length === 0) {
-        activityArray = Array(60).fill(0);
-    }
+    const [daily, setDaily] = useState(-1);
+    const [prevDaily, setPrevDaily] = useState(-1);
+    const [weekly, setWeekly] = useState(-1);
+    const [prevWeekly, setPrevWeekly] = useState(-1);
+    const [monthly, setMonthly] = useState(-1);
+    const [prevMonthly, setPrevMonthly] = useState(-1);
 
-    const daily = activityArray[0];
-    const prevDaily = activityArray[1];
-    const weekly = arraySum(activityArray.slice(0, 7));
-    const prevWeekly = arraySum(activityArray.slice(7, 14));
-    const monthly = arraySum(activityArray.slice(0, 30));
-    const prevMonthly = arraySum(activityArray.slice(30, 60));
+    useEffect(() => {
+        // guard to check empty array as that is the default in schema
+        let activityArray = props.activityArray;
+        if (activityArray.length === 0) {
+            activityArray = Array(60).fill(0);
+        }
+
+        setDaily(activityArray[0]);
+        setPrevDaily(activityArray[1]);
+        setWeekly(arraySum(activityArray.slice(0, 7)));
+        setPrevWeekly(arraySum(activityArray.slice(7, 14)));
+        setMonthly(arraySum(activityArray.slice(0, 30)));
+        setPrevMonthly(arraySum(activityArray.slice(30, 60)));
+    }, [props.activityArray])
 
     return (
         <div className="card shadow">

@@ -71,7 +71,7 @@ function RecentProblemsRater(props) {
             difficulty: status.userDifficultyRating,
         }));
         setRowData(rows);
-    }, []);
+    }, [props.userInfo]);
 
     const handleRatingChange = (event, problemId) => {
         const updateUserDifficultyRatingInDB = async () => {
