@@ -72,7 +72,6 @@ Response:
 */
 router.post("/vote", authenticateJWT, async (req, res) => {
     try {
-        // remove old vote if it exists
         const post = await prisma.Post.findUnique({
             where: { id: req.body.id },
             include: {
@@ -85,13 +84,13 @@ router.post("/vote", authenticateJWT, async (req, res) => {
         let disconnectField = null;
         let connectField = null;
 
-        const oldVote = post.upvotes.some(user => user.username === req.user.username) ? 'upvotes' :
-                        post.downvotes.some(user => user.username === req.user.username) ? 'downvotes' : 
+        const oldVote = post.upvotes.some(user => user.username === req.user.username) ? "upvotes" :
+                        post.downvotes.some(user => user.username === req.user.username) ? "downvotes" : 
                         null;
 
         if (oldVote !== null) {
             disconnectField = oldVote;
-            voteDelta += (oldVote === 'upvotes' ? -1 : 1);
+            voteDelta += (oldVote === "upvotes" ? -1 : 1);
         }
 
         const newVote = req.body.voteType === "neutral" ? null : 
