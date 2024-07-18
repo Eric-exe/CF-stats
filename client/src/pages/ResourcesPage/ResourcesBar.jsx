@@ -25,6 +25,15 @@ function ResourcesBar(props) {
     const [tags, setTags] = useState([]);
     const [sortBy, setSortBy] = useState("votes-desc");
 
+    // debounce fn: https://www.inkoop.io/blog/debounce-and-throttle-javascript-edition/
+    let searchDebounceTimer = null;
+    const debounce = (func, delay) => {
+        return (...args) => {
+            if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => func(...args), delay);
+        };
+    };
+
     const getPosts = async() => {
         const response = await API.getPosts(title, tags, sortBy).then(response => response.json());
         if (response.status === "OK") {
@@ -33,7 +42,10 @@ function ResourcesBar(props) {
     }
 
     useEffect(() => {
-        getPosts();
+        const debounceFn = debounce(() => {
+            getPosts();
+        }, 500);
+        debounceFn();
     }, [title, tags, sortBy]);
 
     return (
