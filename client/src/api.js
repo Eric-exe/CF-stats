@@ -61,6 +61,10 @@ class API {
     static createPost(JWT, title, body, tags) {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/posts/create", "POST", JSON.stringify({ title, body, tags }), JWT);
     }
+
+    static updatePostVotes(JWT, id, voteType) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/posts/vote", "POST", JSON.stringify({ id, voteType }), JWT);
+    }
 }
 
 export default API;
