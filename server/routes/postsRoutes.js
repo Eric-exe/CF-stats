@@ -125,4 +125,53 @@ router.post("/vote", authenticateJWT, async (req, res) => {
     }
 });
 
+/*
+Returns all of the user's posts.
+
+REQUIRES the JWT in auth header.
+
+Response:
+[post]
+*/
+router.get("/me", authenticateJWT, async (req, res) => {
+    try {
+        const posts = await prisma.Post.findMany({
+            where: { authorUsername: req.user.username },
+            include: {
+                upvotes: true,
+                downvotes: true, 
+            }
+        });
+
+        return res.status(200).json({ status: "OK", posts });
+    } catch (error) {
+        console.error("[Personal posts error]:", error);
+        return res.status(409).json({ status: "FAILED" });
+    }
+});
+
+/*
+Deletes the post specified by post ID.
+
+REQUIRES the JWT in auth header.
+
+Response:
+{ status: "OK" }
+*/
+router.post("/delete", authenticateJWT, async (req, res) => {
+    try {
+        await prisma.Post.delete({
+            where: { 
+                id_authorUsername: { 
+                    id: req.body.id, 
+                    authorUsername: req.user.username 
+                }
+            }
+        });
+    } catch (error) {
+        console.error("[Error deleting post]: ", error);
+        return res.status(409).json({ status: "FAILED" });
+    }
+})
+
 module.exports = router;

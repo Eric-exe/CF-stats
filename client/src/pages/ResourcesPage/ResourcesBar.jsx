@@ -24,6 +24,7 @@ function ResourcesBar(props) {
     const [title, setTitle] = useState("");
     const [tags, setTags] = useState([]);
     const [sortBy, setSortBy] = useState("votes-desc");
+    const [inPersonal, setInPersonal] = useState(false); // display personal instead of all posts
 
     // debounce fn: https://www.inkoop.io/blog/debounce-and-throttle-javascript-edition/
     let searchDebounceTimer = null;
@@ -34,12 +35,16 @@ function ResourcesBar(props) {
         };
     };
 
-    const getPosts = async() => {
-        const response = await API.getPosts(title, tags, sortBy).then(response => response.json());
+    const postsResponseHandler = (response) => {
         if (response.status === "OK") {
             props.postsSetter(response.posts);
         }
-    }
+    };
+
+    const getPosts = async () => {
+        const response = await API.getPosts(title, tags, sortBy).then((response) => response.json());
+        postsResponseHandler(response);
+    };
 
     useEffect(() => {
         const debounceFn = debounce(() => {
@@ -47,6 +52,17 @@ function ResourcesBar(props) {
         }, 300);
         debounceFn();
     }, [title, tags, sortBy]);
+
+    const getPersonalPosts = async () => {
+        if (!inPersonal) {
+            setInPersonal(true);
+            const response = await API.getPersonalPosts(props.JWT).then((response) => response.json());
+            postsResponseHandler(response);
+        } else {
+            setInPersonal(false);
+            getPosts();
+        }
+    };
 
     return (
         <>
@@ -85,7 +101,13 @@ function ResourcesBar(props) {
                         <hr />
                         <div className="row d-flex justify-content-center">
                             <div className="col-lg-1">
-                                <div className="btn btn-outline-dark d-flex justify-content-center min-width-fit-content">
+                                <div
+                                    className={
+                                        "btn btn-outline-dark d-flex justify-content-center min-width-fit-content " +
+                                        (inPersonal ? "active" : "")
+                                    }
+                                    onClick={getPersonalPosts}
+                                >
                                     <i className="bi bi-person-fill"></i>
                                     &nbsp;Me
                                 </div>
@@ -107,7 +129,7 @@ function ResourcesBar(props) {
                 )}
             </div>
 
-            <CreatePostModal JWT={props.JWT} JWTSetter={props.JWTSetter} postsSetter={props.postsSetter} updatePosts={getPosts}/>
+            <CreatePostModal JWT={props.JWT} JWTSetter={props.JWTSetter} postsSetter={props.postsSetter} updatePosts={getPosts} />
         </>
     );
 }

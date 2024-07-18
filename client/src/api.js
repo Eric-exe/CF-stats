@@ -65,6 +65,14 @@ class API {
     static updatePostVotes(JWT, id, voteType) {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/posts/vote", "POST", JSON.stringify({ id, voteType }), JWT);
     }
+
+    static getPersonalPosts(JWT) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/posts/me", "GET", "", JWT);
+    }
+
+    static deletePost(JWT, id) {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/posts/delete", "POST", JSON.stringify({ id }), JWT);
+    }
 }
 
 export default API;
