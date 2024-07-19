@@ -1,11 +1,51 @@
+import { useState, useEffect } from "react";
+import API from "../../api";
 import propTypes from "prop-types";
 import TagsRenderer from "../../components/TagsRenderer";
 
 Post.propTypes = {
+    userInfo: propTypes.object.isRequired,
     data: propTypes.object.isRequired, // { id, authorUsername, title, body, tags, timeCreated, upvotes, downvotes, votes }
+    JWT: propTypes.string.isRequired,
+    JWTSetter: propTypes.func.isRequired,
 };
 
 function Post(props) {
+    const [votes, setVotes] = useState(0);
+    const [isUpvoted, setIsUpvoted] = useState(false);
+    const [isDownvoted, setIsDownvoted] = useState(false);
+
+    // load data into states on init
+    useEffect(() => {
+        setVotes(props.data.votes);
+        setIsUpvoted(props.data.upvotes.some((user) => user.username === props.userInfo.username));
+        setIsDownvoted(props.data.downvotes.some((user) => user.username === props.userInfo.username));
+    }, [props.data]);
+
+    const updateVote = async (voteType) => {
+        if ((voteType === "upvote" && isUpvoted) || (voteType === "downvote" && isDownvoted)) {
+            voteType = "neutral";
+        }
+        const response = await API.updatePostVotes(props.JWT, props.data.id, voteType).then((response) => response.json());
+        if (Object.prototype.hasOwnProperty.call(response, "JWT Error")) {
+            props.JWTSetter("");
+        }
+
+        if (response.status === "OK") {
+            const oldVote = isUpvoted ? 1 :
+                            isDownvoted? -1 :
+                            0;
+            
+            const newVote = voteType === "upvote" ? 1 :
+                            voteType === "downvote" ? -1 :
+                            0;
+            
+            setVotes(votes => votes + (newVote - oldVote));
+            setIsUpvoted(voteType === "upvote");
+            setIsDownvoted(voteType === "downvote");
+        }
+    };
+
     return (
         <div className="accordion-item">
             <h2 className="accordion-header">
@@ -23,8 +63,8 @@ function Post(props) {
                                 {new Date(props.data.timeCreated).toLocaleString()}
                             </div>
                             <div className="text-end" style={{ width: "6rem" }}>
-                                {props.data.votes}&nbsp;
-                                {props.data.votes >= 0 ? (
+                                {votes}&nbsp;
+                                {votes >= 0 ? (
                                     <i className="h6 bi bi-caret-up-fill" />
                                 ) : (
                                     <i className="h6 bi bi-caret-down-fill" />
@@ -41,13 +81,27 @@ function Post(props) {
                     <div className="mt-2">
                         <pre style={{ whiteSpace: "pre-wrap" }}>{props.data.body}</pre>
                     </div>
-                    <hr />
+                    {JSON.stringify(props.userInfo) === "{}" ? (
+                        <></>
+                    ) : (
+                        <>
+                            <hr />
 
-                    <div className="d-flex justify-content-end">
-                        <i className="h5 bi bi-caret-up-fill" />
-                        &nbsp;{props.data.votes}&nbsp;
-                        <i className="h5 bi bi-caret-down-fill" />
-                    </div>
+                            <div className="d-flex justify-content-end">
+                                <i
+                                    className="h5 bi bi-caret-up-fill hover-pop"
+                                    style={{ color: isUpvoted ? "green" : "black" }}
+                                    onClick={() => updateVote("upvote")}
+                                />
+                                &nbsp;{votes}&nbsp;
+                                <i
+                                    className="h5 bi bi-caret-down-fill hover-pop"
+                                    style={{ color: isDownvoted ? "red" : "black" }}
+                                    onClick={() => updateVote("downvote")}
+                                />
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

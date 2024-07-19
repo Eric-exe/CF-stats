@@ -44,7 +44,7 @@ function ResourcesBar(props) {
     useEffect(() => {
         const debounceFn = debounce(() => {
             getPosts();
-        }, 500);
+        }, 300);
         debounceFn();
     }, [title, tags, sortBy]);
 
