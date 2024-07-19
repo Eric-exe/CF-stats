@@ -46,7 +46,7 @@ class CodeforcesAPI {
                         verdict: submission.verdict,
                         timeUsed: submission.timeConsumedMillis,
                         memoryUsed: submission.memoryConsumedBytes,
-                    }
+                    },
                 });
             } catch (error) {
                 console.error("[Update submission error]: ", error); // most likely the problem doesn't exist in problems API
@@ -82,7 +82,7 @@ class CodeforcesAPI {
                         update: {
                             rating: problem.rating,
                             tags: problem.tags,
-                        }
+                        },
                     });
                 } catch (error) {
                     console.error(error);
@@ -102,6 +102,39 @@ class CodeforcesAPI {
             return data;
         } catch (error) {
             throw new Error("Failed to fetch user info");
+        }
+    }
+
+    /*
+    Fetches all contests info { id, name, durationTime, etc... } and write to db
+    */
+    static async fetchContestsInfo() {
+        try {
+            const data = await this.get("https://codeforces.com/api/contest.list").then((response) => response.json());
+            if (data.status !== "OK") {
+                throw new Error(`status not ok: ${JSON.stringify(data)}`);
+            }
+
+            const contests = data.result;
+
+            for (const contestData of contests) {
+                await prisma.Contest.upsert({
+                    where: { id: contestData.id },
+                    create: {
+                        id: contestData.id,
+                        name: contestData.name,
+                        type: contestData.type,
+                        phase: contestData.phase,
+                        durationSeconds: contestData.durationSeconds,
+                        startTime: new Date(contestData.startTimeSeconds * 1000),
+                    },
+                    update: {
+                        phase: contestData.phase
+                    }
+                });
+            }
+        } catch (error) {
+            console.error("[Failed to fetch contests info]: ", error);
         }
     }
 }

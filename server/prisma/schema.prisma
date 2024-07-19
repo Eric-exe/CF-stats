@@ -101,3 +101,12 @@ model Post {
     @@index([authorUsername])
     @@unique([id, authorUsername])
 }
+
+model Contest {
+    id                          Int                     @id @unique
+    name                        String                  
+    type                        String
+    phase                       String
+    startTime                   DateTime
+    durationSeconds             Int
+}

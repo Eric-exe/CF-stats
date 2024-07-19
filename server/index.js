@@ -9,6 +9,7 @@ app.use(express.json());
 app.use("/user", require("./routes/userRoutes"));
 app.use("/problems", require("./routes/problemsRoutes"));
 app.use("/posts", require("./routes/postsRoutes"));
+app.use("/contests", require("./routes/contestsRoutes"));
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
