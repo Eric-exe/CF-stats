@@ -40,7 +40,7 @@ function Post(props) {
             const newVote = voteType === "upvote" ? 1 :
                             voteType === "downvote" ? -1 :
                             0;
-
+                            
             setVotes((votes) => votes + (newVote - oldVote));
             setIsUpvoted(voteType === "upvote");
             setIsDownvoted(voteType === "downvote");
