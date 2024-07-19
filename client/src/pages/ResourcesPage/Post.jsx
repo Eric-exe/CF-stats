@@ -6,7 +6,7 @@ import TagsRenderer from "../../components/TagsRenderer";
 Post.propTypes = {
     userInfo: propTypes.object.isRequired,
     data: propTypes.object.isRequired, // { id, authorUsername, title, body, tags, timeCreated, upvotes, downvotes, votes }
-    postsSetter: propTypes.func.isRequired, 
+    postsSetter: propTypes.func.isRequired,
     JWT: propTypes.string.isRequired,
     JWTSetter: propTypes.func.isRequired,
 };
@@ -33,9 +33,13 @@ function Post(props) {
         }
 
         if (response.status === "OK") {
-            const oldVote = isUpvoted ? 1 : isDownvoted ? -1 : 0;
+            const oldVote = isUpvoted ? 1 :
+                            isDownvoted ? -1 :
+                            0;
 
-            const newVote = voteType === "upvote" ? 1 : voteType === "downvote" ? -1 : 0;
+            const newVote = voteType === "upvote" ? 1 :
+                            voteType === "downvote" ? -1 :
+                            0;
 
             setVotes((votes) => votes + (newVote - oldVote));
             setIsUpvoted(voteType === "upvote");
