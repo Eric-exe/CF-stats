@@ -48,7 +48,7 @@ function App() {
             <Router>
                 <NavBar userInfo={userInfo} />
                 <Routes>
-                    <Route index element={<HomePage />} />
+                    <Route index element={<HomePage userInfo={userInfo}/>} />
                     <Route path="problems" element={<ProblemsPage userInfo={userInfo} />} />
                     <Route path="resources" element={<ResourcesPage userInfo={userInfo} JWT={JWT} JWTSetter={setJWT} />} />
                     <Route

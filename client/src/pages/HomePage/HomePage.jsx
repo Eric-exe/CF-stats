@@ -1,6 +1,16 @@
-function HomePage() {
+import propTypes from "prop-types";
+
+HomePage.propTypes = {
+    userInfo: propTypes.object.isRequired,
+};
+
+function HomePage(props) {
     return (
-        <>This is the homepage</>
+        <>
+            <div className="card card-body shadow m-4">
+                Hello {props.userInfo.username}!
+            </div>
+        </>
     );
 }
 
