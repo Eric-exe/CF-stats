@@ -46,12 +46,16 @@ function RecentProblemsRater(props) {
         );
     };
 
+    const filterParams = {
+        maxNumConditions: 25,
+    };
+    
     const columnDefs = [
-        { field: "contestId", headerName: "Contest ID", sortable: true, filter: true },
-        { field: "index", headerName: "Index", sortable: true, filter: true },
-        { field: "name", headerName: "Problem Name", sortable: true, filter: true, cellRenderer: ProblemLinkRenderer, flex: 1 },
-        { field: "rating", headerName: "Rating", sortable: true, filter: true },
-        { field: "tags", headerName: "Tags", sortable: false, filter: true, cellRenderer: TagsRenderer, flex: 1 },
+        { field: "contestId", headerName: "Contest ID", sortable: true, filter: true, filterParams },
+        { field: "index", headerName: "Index", sortable: true, filter: true, filterParams },
+        { field: "name", headerName: "Problem Name", sortable: true, filter: true, cellRenderer: ProblemLinkRenderer, flex: 1, filterParams },
+        { field: "rating", headerName: "Rating", sortable: true, filter: true, filterParams },
+        { field: "tags", headerName: "Tags", sortable: false, filter: true, cellRenderer: TagsRenderer, flex: 1, filterParams },
         { field: "acAttempted", headerName: "AC/Attempted", sortable: false },
         { field: "difficulty", headername: "Difficulty", sortable: false, cellRenderer: DifficultySliderRenderer },
     ];
@@ -65,7 +69,7 @@ function RecentProblemsRater(props) {
             contestId: status.problem.contestId,
             index: status.problem.index,
             name: status.problem.name,
-            rating: status.problem.rating === -1 ? null : status.problem.rating,
+            rating: status.problem.rating,
             tags: status.problem.tags,
             acAttempted: `${status.AC}/${status.submissions} (${Math.round((status.AC / status.submissions) * 100 * 100) / 100}%)`,
             difficulty: status.userDifficultyRating,

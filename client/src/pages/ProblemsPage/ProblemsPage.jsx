@@ -29,7 +29,7 @@ function ProblemsPage(props) {
             cellRenderer: ProblemLinkRenderer,
             filterParams,
         },
-        { field: "rating", headerName: "Rating", sortable: true, filter: true, filterParams },
+        { field: "rating", headerName: "Rating", sortable: true, filter: true, filterParams: { maxNumConditions: 25 },  },
         { field: "tags", headerName: "Tags", sortable: false, filter: true, flex: 1, cellRenderer: TagsRenderer, filterParams },
     ];
 
@@ -57,7 +57,7 @@ function ProblemsPage(props) {
                 contestId: problem.contestId,
                 index: problem.index,
                 name: problem.name,
-                rating: problem.rating === -1 ? null : problem.rating,
+                rating: problem.rating,
                 tags: problem.tags,
                 status,
             };
