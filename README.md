@@ -25,12 +25,12 @@
 - [x] Get started with resources board
 
 ### Week 8
-- [ ] Finish the resources board if necessary
+- [x] Finish the resources board if necessary
 - [ ] Implement general page, listing upcoming and previous contests.
 - [ ] STRETCH: Visualize user stats with graphs via a graph library
-- [ ] Add refresh button to profile, fetching latest data. Has to work with task schedulers as to not spam Codeforces API
+- [x] Add refresh button to profile, fetching latest data. Has to work with task schedulers as to not spam Codeforces API
 
 ### Week 9
 - [ ] Implement "couldn't solve", storing the questions the user has failed to solve in the past
 - [ ] Implement the creation of a username, updating resources board with author name.
-- [ ] Implement public profile pages, allowing for foreign users to see a user's public stats (total solved/submissions and their graphs)
+- [x] Implement public profile pages, allowing for foreign users to see a user's public stats (total solved/submissions and their graphs)

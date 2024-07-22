@@ -99,4 +99,5 @@ model Post {
     timeCreated                 DateTime                @default(now())
 
     @@index([authorUsername])
+    @@unique([id, authorUsername])
 }
