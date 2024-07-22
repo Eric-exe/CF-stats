@@ -10,8 +10,9 @@ const cfQueue = new Queue("codeforces queue", {
     connection: redisConnection,
 });
 
-// update problems at 12 AM
+// update data at 12 AM
 cfQueue.add("update problems", { fn: "UPDATE_PROBLEM" }, { repeat: { cron: "0 0 * * *" }, priority: 1 });
+cfQueue.add("update contests", { fn: "UPDATE_CONTEST" }, { repeat: { cron: "0 0 * * *" }, priority: 1 });
 
 const cfWorker = new Worker(
     "codeforces queue",
@@ -20,6 +21,9 @@ const cfWorker = new Worker(
         switch (job.data.fn) {
             case "UPDATE_PROBLEM":
                 updateProblemsData();
+                break;
+            case "UPDATE_CONTEST":
+                CodeforcesAPI.fetchContestsInfo();
                 break;
             case "UPDATE_USER":
                 updateUserData(job.data.username);

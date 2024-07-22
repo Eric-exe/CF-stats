@@ -73,6 +73,10 @@ class API {
     static deletePost(JWT, id) {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/posts/delete", "POST", JSON.stringify({ id }), JWT);
     }
+
+    static getContestsData() {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/contests/data", "GET", "", "");
+    }
 }
 
 export default API;
