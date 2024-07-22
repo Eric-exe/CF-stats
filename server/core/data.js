@@ -7,7 +7,7 @@ const CodeforcesAPI = require("./CodeforcesAPI");
 const SCORES = [1, 0.75, 0.5, 0.25, 0];
 const K = 20;
 const BASE_OF_EXPONENT = 10;
-const RATING_DIFFERENCE_SCALE = 400;
+const RATING_DIFFERENCE_SCALE = 150;
 
 const PAST_PROBLEMS_COUNT = 200;
 
@@ -37,8 +37,13 @@ class Data {
         await CodeforcesAPI.fetchUserData(username);
 
         try {
-            await prisma.UserProblemStatus.deleteMany({
+            // reset submissions & AC count to 0 so count is accurate
+            await prisma.UserProblemStatus.updateMany({
                 where: { username },
+                data: {
+                    submissions: 0,
+                    AC: 0
+                }
             });
 
             const submissions = await prisma.Submission.findMany({
@@ -92,7 +97,6 @@ class Data {
                     problem: { include: { submissions: { orderBy: { timeCreated: "asc" } } } },
                 },
             });
-
             // count the frequency of a question tag and tag difficulty
             const tagsFrequency = {};
             const tagsDifficulty = {};
