@@ -59,10 +59,6 @@ function App() {
         fetchPublicData();
     }, []);
 
-    useEffect(() => {
-        console.log(upcomingContestsData);
-    }, [upcomingContestsData]);
-
     return (
         <>
             <Router>

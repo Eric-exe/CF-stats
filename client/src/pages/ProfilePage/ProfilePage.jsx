@@ -164,7 +164,7 @@ function ProfilePage(props) {
 
                                     <div className="m-4">
                                         <div className="row">
-                                            <div className="col-6">
+                                            <div className="col-lg-6">
                                                 <ActivityGraphStatsCard
                                                     title="Submissions Activity"
                                                     id="submisisons-activity-card"
@@ -172,7 +172,7 @@ function ProfilePage(props) {
                                                 />
                                             </div>
 
-                                            <div className="col-6">
+                                            <div className="col-lg-6">
                                                 <ActivityGraphStatsCard
                                                     title="Problems Solved Activity"
                                                     id="problems-solved-activity-card"
