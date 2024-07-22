@@ -7,7 +7,7 @@ const CodeforcesAPI = require("./CodeforcesAPI");
 const SCORES = [1, 0.75, 0.5, 0.25, 0];
 const K = 20;
 const BASE_OF_EXPONENT = 10;
-const RATING_DIFFERENCE_SCALE = 100;
+const RATING_DIFFERENCE_SCALE = 400;
 
 const PAST_PROBLEMS_COUNT = 200;
 
