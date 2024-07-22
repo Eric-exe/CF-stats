@@ -115,9 +115,7 @@ class CodeforcesAPI {
                 throw new Error(`status not ok: ${JSON.stringify(data)}`);
             }
 
-            const contests = data.result;
-
-            for (const contestData of contests) {
+            for (const contestData of data.result) {
                 await prisma.Contest.upsert({
                     where: { id: contestData.id },
                     create: {
