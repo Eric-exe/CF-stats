@@ -114,7 +114,7 @@ class Data {
                         }
                         submissionsBeforeAC++;
                     }
-                    userDifficultyRating = ACed ? Math.min(1 + submissionsBeforeAC, 5) : 5;
+                    userDifficultyRating = ACed ? Math.min(2 + submissionsBeforeAC, 5) : 5;
                     await prisma.UserProblemStatus.update({
                         where: { username_problemId: { username, problemId: problemStatus.problemId } },
                         data: { userDifficultyRating },
