@@ -26,7 +26,7 @@
 
 ### Week 8
 - [x] Finish the resources board if necessary
-- [ ] Implement general page, listing upcoming and previous contests.
+- [x] Implement general page, listing upcoming and previous contests.
 - [ ] STRETCH: Visualize user stats with graphs via a graph library
 - [x] Add refresh button to profile, fetching latest data. Has to work with task schedulers as to not spam Codeforces API
 
