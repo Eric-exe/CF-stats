@@ -13,6 +13,7 @@ ProfilePage.propTypes = {
     userInfoSetter: propTypes.func.isRequired,
     JWT: propTypes.string.isRequired,
     JWTSetter: propTypes.func.isRequired,
+    metadata: propTypes.object.isRequired,
 };
 
 function ProfilePage(props) {
@@ -160,7 +161,7 @@ function ProfilePage(props) {
                                         <></>
                                     )}
 
-                                    <ProblemStatsCard profileInfo={profileInfo} />
+                                    <ProblemStatsCard profileInfo={profileInfo} metadata={props.metadata}/>
 
                                     <div className="m-4">
                                         <div className="row">

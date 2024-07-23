@@ -77,6 +77,10 @@ class API {
     static getContestsData() {
         return this.fetchRequest(import.meta.env.VITE_DB_URL + "/contests/data", "GET", "", "");
     }
+
+    static getMetadata() {
+        return this.fetchRequest(import.meta.env.VITE_DB_URL + "/problems/getMetadata", "GET", "", "");
+    }
 }
 
 export default API;
