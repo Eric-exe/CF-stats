@@ -4,6 +4,7 @@ import propTypes from "prop-types";
 
 ProblemStatsCard.propTypes = {
     profileInfo: propTypes.object.isRequired,
+    metadata: propTypes.object.isRequired, 
 };
 
 const MAX_TAGS_TO_DISPLAY = 7;
@@ -13,19 +14,20 @@ const SYSTEM_ADD_DIFFICULTY = 3;
 function ProblemStatsCard(props) {
     const [strengths, setStrengths] = useState([]);
     const [weaknesses, setWeaknesses] = useState([]);
+    const [tagsInEstimatedRange, setTagsInEstimatedRange] = useState({});
 
     useEffect(() => {
         /*
-    Calculate the average difficulty of each tag with tagsDifficulty[tag] / tagsFrequency[tag].
+        Calculate the average difficulty of each tag with tagsDifficulty[tag] / tagsFrequency[tag].
 
-    Edge case:
-    If a tag has only a few problems solved (tagsFrequency), it is not really reflective of the user's
-    skill on said tag. To counteract this, we can add some dummy difficulties to lower the impact of a tag.
+        Edge case:
+        If a tag has only a few problems solved (tagsFrequency), it is not really reflective of the user's
+        skill on said tag. To counteract this, we can add some dummy difficulties to lower the impact of a tag.
 
-    For example, a tag with difficulty 1 and frequency 1 isn't really reflective of the user's skill in that tag
-    will have the average difficulty of 1. With bayesian average, the average difficulty is:
-    (1 + (5 - 1) * 3) / (1 + 4) = 13/5 = 2.6
-    */
+        For example, a tag with difficulty 1 and frequency 1 isn't really reflective of the user's skill in that tag
+        will have the average difficulty of 1. With bayesian average, the average difficulty is:
+        (1 + (5 - 1) * 3) / (1 + 4) = 13/5 = 2.6
+        */
         const tags = Object.keys(props.profileInfo.tagsFrequency);
         const difficulties = {};
         for (const tag of tags) {
@@ -50,6 +52,18 @@ function ProblemStatsCard(props) {
         setStrengths(strengthTags);
         setWeaknesses(weaknessTags);
     }, [props.profileInfo]);
+
+    useEffect(() => {
+        console.log(props.metadata);
+        if (props.metadata.problemsTagsSpread === undefined) {
+            return;
+        }
+        // CF rating is bounded [800, 3500]
+        let roundedEstimatedRating = Math.round(props.profileInfo.estimatedRating / 100) * 100;
+        roundedEstimatedRating = Math.max(roundedEstimatedRating, 800);
+        roundedEstimatedRating = Math.min(roundedEstimatedRating, 3500);
+        setTagsInEstimatedRange(props.metadata.problemsTagsSpread[roundedEstimatedRating]);
+    }, [props.metadata]);
 
     return (
         <div className="card shadow m-4">
@@ -94,7 +108,10 @@ function ProblemStatsCard(props) {
                                 Problems Breakdown:
                                 <TagsPieChart data={props.profileInfo.tagsFrequency}/>
                             </div>
-                            <div className="col-md-4">Problems in Estimated Rating Range Breakdown:</div>
+                            <div className="col-md-4">
+                                Problems in Estimated Rating Range Breakdown:
+                                <TagsPieChart data={tagsInEstimatedRange}/>
+                            </div>
                         </div>
                     </div>
                 </div>
