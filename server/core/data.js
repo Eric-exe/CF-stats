@@ -144,7 +144,7 @@ class Data {
             timeNow.setHours(0, 0, 0, 0);
             for (const submission of sortedSubmissions) {
                 const submissionDate = new Date(submission.timeCreated);
-                submissionDate.setHours(0, 0, 0, 0); 
+                submissionDate.setHours(0, 0, 0, 0);
                 const dayDiff = Math.floor((timeNow - submissionDate) / (1000 * 60 * 60 * 24));
                 if (dayDiff >= 0 && dayDiff < 60) {
                     past60DaySubmissions[dayDiff]++;
