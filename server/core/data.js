@@ -28,6 +28,8 @@ class Data {
     - total AC count (a problem can have multiple ACs)
     - tagsFrequency: number of problems a user has attempted under a certain tag (Ex: { "dp": 24 })
     - tagsDifficulty: sum of user rated difficulty under a certain tag. 
+    - ratingsFrequency: number of problems a user has attempted under a certain rating.
+    - ratingsAC: number of problems a user has solved under a certain rating.
         (Users can rate difficulty of problems and the rating would be summed up and grouped via problem tag)
     - past 60 day submissions: submissions activity over the last 60 days
     - past 60 day AC: AC activity over the last 60 days
@@ -96,8 +98,10 @@ class Data {
             // count the frequency of a question tag and tag difficulty
             const tagsFrequency = {};
             const tagsDifficulty = {};
+            const ratingsFrequency = {};
+            const ratingsAC = {};
             for (const problemStatus of problemStatuses) {
-                // calculate the difficulty of this problem if user didn't submit
+                // calculate the difficulty of this problem if user didn't provide a rating
                 // based on submissions before AC (not accurate but gets the job done)
                 let userDifficultyRating = problemStatus.userDifficultyRating;
                 if (userDifficultyRating == -1) {
@@ -121,17 +125,29 @@ class Data {
                     if (!tagsFrequency[tag]) {
                         tagsFrequency[tag] = 0;
                     }
-                    tagsFrequency[tag]++;
                     if (!tagsDifficulty[tag]) {
                         tagsDifficulty[tag] = 0;
                     }
+                    tagsFrequency[tag]++;
                     tagsDifficulty[tag] += userDifficultyRating;
+                }
+
+                if (!ratingsFrequency[problemStatus.problem.rating]) {
+                    ratingsFrequency[problemStatus.problem.rating] = 0;
+                }
+                if (!ratingsAC[problemStatus.problem.rating]) {
+                    ratingsAC[problemStatus.problem.rating] = 0;
+                }
+                
+                ratingsFrequency[problemStatus.problem.rating]++;
+                if (problemStatus.AC > 0) {
+                    ratingsAC[problemStatus.problem.rating]++;
                 }
             }
 
             // count the number of submissions and AC over the last 60 days
-            const past60DaySubmissions = Array(60).fill(0),
-                past60DayAC = Array(60).fill(0);
+            const past60DaySubmissions = Array(60).fill(0)
+            const past60DayAC = Array(60).fill(0);
             const sortedSubmissions = await prisma.Submission.findMany({
                 where: {
                     authorUsername: username,
@@ -162,6 +178,8 @@ class Data {
                     totalAC: totalSubmissionsAndAC._sum.AC || 0,
                     tagsFrequency,
                     tagsDifficulty,
+                    ratingsFrequency,
+                    ratingsAC,
                     recentSubmissions: past60DaySubmissions,
                     recentAC: past60DayAC,
                     lastUpdated: new Date().toISOString(),

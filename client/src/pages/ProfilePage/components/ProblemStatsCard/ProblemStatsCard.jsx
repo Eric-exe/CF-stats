@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
 import TagsPieChart from "./TagsPieChart";
+import RatingsBarChart from "./RatingsBarChart";
 import propTypes from "prop-types";
 
 ProblemStatsCard.propTypes = {
     profileInfo: propTypes.object.isRequired,
-    metadata: propTypes.object.isRequired, 
+    metadata: propTypes.object.isRequired,
 };
 
 const MAX_TAGS_TO_DISPLAY = 7;
 const BAYESIAN_MAX = 5; // if less than 5 frequency, populate with average
 const SYSTEM_ADD_DIFFICULTY = 3;
+
+const CF_MIN_RATING = 800;
+const CF_MAX_RATING = 3500;
 
 function ProblemStatsCard(props) {
     const [strengths, setStrengths] = useState([]);
@@ -54,16 +58,15 @@ function ProblemStatsCard(props) {
     }, [props.profileInfo]);
 
     useEffect(() => {
-        console.log(props.metadata);
         if (props.metadata.problemsTagsSpread === undefined) {
             return;
         }
         // CF rating is bounded [800, 3500]
         let roundedEstimatedRating = Math.round(props.profileInfo.estimatedRating / 100) * 100;
-        roundedEstimatedRating = Math.max(roundedEstimatedRating, 800);
-        roundedEstimatedRating = Math.min(roundedEstimatedRating, 3500);
+        roundedEstimatedRating = Math.max(roundedEstimatedRating, CF_MIN_RATING);
+        roundedEstimatedRating = Math.min(roundedEstimatedRating, CF_MAX_RATING);
         setTagsInEstimatedRange(props.metadata.problemsTagsSpread[roundedEstimatedRating]);
-    }, [props.metadata]);
+    }, [props.profileInfo, props.metadata]);
 
     return (
         <div className="card shadow m-4">
@@ -74,7 +77,7 @@ function ProblemStatsCard(props) {
                 <div className="container-fluid">
                     <div className="card-body">
                         <div className="row">
-                            <div className="col-md-4">
+                            <div className="col-lg-4">
                                 <div>Problems attempted:&nbsp;{props.profileInfo.problemStatuses.length}</div>
                                 <div>Problems AC:&nbsp;{props.profileInfo.problemsAC}</div>
                                 <div>
@@ -94,6 +97,7 @@ function ProblemStatsCard(props) {
                                         </div>
                                     ))}
                                 </div>
+                                <hr />
                                 Weaknesses:
                                 <div>
                                     {weaknesses.map((weakness, index) => (
@@ -104,14 +108,18 @@ function ProblemStatsCard(props) {
                                 </div>
                             </div>
 
-                            <div className="col-md-4">
-                                Problems Breakdown:
-                                <TagsPieChart data={props.profileInfo.tagsFrequency}/>
+                            <div className="col-lg-4">
+                                <div className="text-nowrap text-truncate">Problems Breakdown:</div>
+                                <TagsPieChart data={props.profileInfo.tagsFrequency} />
                             </div>
-                            <div className="col-md-4">
-                                Problems in Estimated Rating Range Breakdown:
-                                <TagsPieChart data={tagsInEstimatedRange}/>
+                            <div className="col-lg-4">
+                                <div className="text-nowrap text-truncate">Problems in Estimated Rating Range Breakdown:</div>
+                                <TagsPieChart data={tagsInEstimatedRange} />
                             </div>
+                        </div>
+                        <div>
+                            <div className="text-center">Problems Distribution over Ratings:</div>
+                            <RatingsBarChart attempted={props.profileInfo.ratingsFrequency} AC={props.profileInfo.ratingsAC} />
                         </div>
                     </div>
                 </div>
