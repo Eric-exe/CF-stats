@@ -10,12 +10,12 @@ router.get("/update", async (req, res) => {
 
 router.get("/data", async (req, res) => {
     const upcomingContests = await prisma.Contest.findMany({
-        where: { phase: "BEFORE" },
+        where: { phase: { in: ["BEFORE", "CODING"] } },
         orderBy: { startTime: "asc" }
     });
 
     const pastContests = await prisma.Contest.findMany({
-        where: { phase: "FINISHED" },
+        where: { phase: { in: ["FINISHED", "PENDING_SYSTEM_TEST", "SYSTEM_TEST"] } },
         orderBy: { startTime: "desc" }
     });
 

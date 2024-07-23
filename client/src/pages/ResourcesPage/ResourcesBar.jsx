@@ -54,13 +54,14 @@ function ResourcesBar(props) {
     }, [title, tags, sortBy]);
 
     const getPersonalPosts = async () => {
-        if (!inPersonal) {
-            setInPersonal(true);
-            const response = await API.getPersonalPosts(props.JWT).then((response) => response.json());
-            postsResponseHandler(response);
-        } else {
-            setInPersonal(false);
-            getPosts();
+        const fn = inPersonal ? 
+            () => API.getPosts(title, tags, sortBy) :
+            () => API.getPersonalPosts(props.JWT);
+                        
+        setInPersonal((oldInPersonal) => !oldInPersonal);
+        const response = await fn().then(response => response.json());
+        if (response.status === "OK") {
+            props.postsSetter(response.posts);
         }
     };
 

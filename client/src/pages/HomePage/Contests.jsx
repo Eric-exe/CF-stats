@@ -10,7 +10,7 @@ Contests.propTypes = {
 };
 
 function Contests(props) {
-    const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
     const columnDefs = [
         { field: "id", headerName: "ID", sortable: false, filter: false },

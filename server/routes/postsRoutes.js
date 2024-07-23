@@ -168,6 +168,7 @@ router.post("/delete", authenticateJWT, async (req, res) => {
                 }
             }
         });
+        return res.status(200).json({ status: "OK" });
     } catch (error) {
         console.error("[Error deleting post]: ", error);
         return res.status(409).json({ status: "FAILED" });

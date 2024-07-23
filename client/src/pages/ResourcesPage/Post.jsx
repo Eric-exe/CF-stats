@@ -6,7 +6,7 @@ import TagsRenderer from "../../components/TagsRenderer";
 Post.propTypes = {
     userInfo: propTypes.object.isRequired,
     data: propTypes.object.isRequired, // { id, authorUsername, title, body, tags, timeCreated, upvotes, downvotes, votes }
-    postsSetter: propTypes.func.isRequired, 
+    postsSetter: propTypes.func.isRequired,
     JWT: propTypes.string.isRequired,
     JWTSetter: propTypes.func.isRequired,
 };
@@ -44,10 +44,12 @@ function Post(props) {
     };
 
     const deletePost = async () => {
-        props.postsSetter((posts) => {
-            return posts.filter((post) => post.id !== props.data.id);
-        });
-        API.deletePost(props.JWT, props.data.id);
+        const response = await API.deletePost(props.JWT, props.data.id).then((response) => response.json());
+        if (response.status === "OK") {
+            props.postsSetter((posts) => {
+                return posts.filter((post) => post.id !== props.data.id);
+            });
+        }
     };
 
     return (

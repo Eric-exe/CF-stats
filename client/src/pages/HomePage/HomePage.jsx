@@ -14,7 +14,7 @@ function HomePage(props) {
                 Hello {props.userInfo.username}!
             </div>
 
-            <Contests title="Upcoming Contests" height="30vh" data={props.upcomingContestsData}/>
+            <Contests title="Current and Upcoming Contests" height="30vh" data={props.upcomingContestsData}/>
             <Contests title="Previous Contests" height="60vh" data={props.pastContestsData}/>
         </>
     );
