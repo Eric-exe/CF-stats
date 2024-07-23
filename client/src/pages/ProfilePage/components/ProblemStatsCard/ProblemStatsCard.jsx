@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import TagsPieChart from "./TagsPieChart";
 import propTypes from "prop-types";
 
 ProblemStatsCard.propTypes = {
@@ -89,7 +90,10 @@ function ProblemStatsCard(props) {
                                 </div>
                             </div>
 
-                            <div className="col-md-4">Problems Breakdown:</div>
+                            <div className="col-md-4">
+                                Problems Breakdown:
+                                <TagsPieChart data={props.profileInfo.tagsFrequency}/>
+                            </div>
                             <div className="col-md-4">Problems in Estimated Rating Range Breakdown:</div>
                         </div>
                     </div>

@@ -145,11 +145,16 @@ class Data {
             });
 
             const timeNow = new Date();
+            timeNow.setHours(0, 0, 0, 0);
             for (const submission of sortedSubmissions) {
-                const dayDiff = Math.floor((timeNow - new Date(submission.timeCreated)) / (1000 * 60 * 60 * 24));
-                past60DaySubmissions[dayDiff]++;
-                if (submission.verdict === "OK") {
-                    past60DayAC[dayDiff]++;
+                const submissionDate = new Date(submission.timeCreated);
+                submissionDate.setHours(0, 0, 0, 0);
+                const dayDiff = Math.floor((timeNow - submissionDate) / (1000 * 60 * 60 * 24));
+                if (dayDiff >= 0 && dayDiff < 60) {
+                    past60DaySubmissions[dayDiff]++;
+                    if (submission.verdict === "OK") {
+                        past60DayAC[dayDiff]++;
+                    }
                 }
             }
 
@@ -281,7 +286,8 @@ class Data {
             if (problemStatus.problem.rating == -1) {
                 continue;
             }
-            const probabilityOfSolving = 1 / (1 + Math.pow(BASE_OF_EXPONENT, (problemStatus.problem.rating - estimatedRating) / RATING_DIFFERENCE_SCALE));
+            const probabilityOfSolving =
+                1 / (1 + Math.pow(BASE_OF_EXPONENT, (problemStatus.problem.rating - estimatedRating) / RATING_DIFFERENCE_SCALE));
             estimatedRating = estimatedRating + K * (SCORES[problemStatus.userDifficultyRating - 1] - probabilityOfSolving);
         }
 

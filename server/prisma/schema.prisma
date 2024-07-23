@@ -106,7 +106,7 @@ model Contest {
     id                          Int                     @id @unique
     name                        String                  
     type                        String
-    phase                       String                  @id
+    phase                       String                  
     startTime                   DateTime
-    durationMins                Int
+    durationSeconds             Int
 }

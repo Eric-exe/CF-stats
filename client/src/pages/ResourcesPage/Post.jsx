@@ -48,10 +48,12 @@ function Post(props) {
     };
 
     const deletePost = async () => {
-        props.postsSetter((posts) => {
-            return posts.filter((post) => post.id !== props.data.id);
-        });
-        API.deletePost(props.JWT, props.data.id);
+        const response = await API.deletePost(props.JWT, props.data.id).then((response) => response.json());
+        if (response.status === "OK") {
+            props.postsSetter((posts) => {
+                return posts.filter((post) => post.id !== props.data.id);
+            });
+        }
     };
 
     return (

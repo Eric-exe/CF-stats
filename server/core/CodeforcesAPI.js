@@ -23,7 +23,7 @@ class CodeforcesAPI {
         try {
             data = await this.get(`https://codeforces.com/api/user.status?handle=${user.handle}`).then((response) => response.json());
         } catch (error) {
-            return console.error("[Failed to fetch user stats: ", error);
+            return console.error("[Failed to fetch user stats]: ", error);
         }
 
         for (const submission of data.result) {
