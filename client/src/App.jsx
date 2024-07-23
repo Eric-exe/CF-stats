@@ -35,7 +35,7 @@ function App() {
                 setUserInfo(data);
             }
         };
-        
+
         if (JWT !== "") {
             updateUserInfo();
         } else {
@@ -43,12 +43,37 @@ function App() {
         }
     }, [JWT]);
 
+    const [upcomingContestsData, setUpcomingContestsData] = useState([]);
+    const [pastContestsData, setPastContestsData] = useState([]);
+
+    // load data on init
+    useEffect(() => {
+        const fetchPublicData = async () => {
+            const response = await API.getContestsData().then((response) => response.json());
+            if (response.status === "OK") {
+                setUpcomingContestsData(response.upcomingContests);
+                setPastContestsData(response.pastContests);
+            }
+        };
+
+        fetchPublicData();
+    }, []);
+
+    useEffect(() => {
+        console.log(upcomingContestsData);
+    }, [upcomingContestsData]);
+
     return (
         <>
             <Router>
                 <NavBar userInfo={userInfo} />
                 <Routes>
-                    <Route index element={<HomePage />} />
+                    <Route
+                        index
+                        element={
+                            <HomePage userInfo={userInfo} upcomingContestsData={upcomingContestsData} pastContestsData={pastContestsData} />
+                        }
+                    />
                     <Route path="problems" element={<ProblemsPage userInfo={userInfo} />} />
                     <Route path="resources" element={<ResourcesPage userInfo={userInfo} JWT={JWT} JWTSetter={setJWT} />} />
                     <Route
