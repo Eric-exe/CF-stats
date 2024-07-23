@@ -48,7 +48,7 @@ function GraphStatsCard(props) {
         });
 
         setChartData(data.reverse());
-    }, []);
+    }, [props.activityArray]);
 
 
     useEffect(() => {

@@ -100,7 +100,7 @@ function TagsPieChart(props) {
             }
         }
         setChartData(newChartData);
-    }, []);
+    }, [props.data]);
 
     useEffect(() => {
         setChartOptions({
