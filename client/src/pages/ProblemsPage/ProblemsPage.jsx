@@ -2,15 +2,14 @@ import { useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import ProblemLinkRenderer from "../../components/ProblemLinkRenderer";
 import TagsRenderer from "../../components/TagsRenderer";
-import API from "../../api";
 import propTypes from "prop-types";
 
 ProblemsPage.propTypes = {
     userInfo: propTypes.object.isRequired,
+    problemsData: propTypes.array.isRequired, 
 };
 
 function ProblemsPage(props) {
-    const [problemsData, setProblemsData] = useState([]);
     const [rowData, setRowData] = useState([]);
 
     const filterParams = {
@@ -33,19 +32,9 @@ function ProblemsPage(props) {
         { field: "tags", headerName: "Tags", sortable: false, filter: true, flex: 1, cellRenderer: TagsRenderer, filterParams },
     ];
 
-    useEffect(() => {
-        const getProblemsData = async () => {
-            const data = await API.getProblemsData().then((response) => response.json());
-            // because the db isn't guaranteed to be sorted, sort the info
-            data.sort((problemA, problemB) => problemB.contestId - problemA.contestId);
-            setProblemsData(data);
-        };
-        getProblemsData();
-    }, []);
-
     // paint the rows different color if the user has solved/attempted a problem
     useEffect(() => {
-        const rows = problemsData.map((problem) => {
+        const rows = props.problemsData.map((problem) => {
             const problemStatus = props.userInfo.problemStatuses
                 ? props.userInfo.problemStatuses.find((status) => status.problem.id === problem.id)
                 : undefined;
@@ -63,7 +52,7 @@ function ProblemsPage(props) {
             };
         });
         setRowData(rows);
-    }, [props.userInfo, problemsData]);
+    }, [props.userInfo, props.problemsData]);
 
     const gridOptions = {
         getRowStyle: (params) => {

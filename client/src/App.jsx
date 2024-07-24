@@ -45,17 +45,29 @@ function App() {
 
     const [upcomingContestsData, setUpcomingContestsData] = useState([]);
     const [pastContestsData, setPastContestsData] = useState([]);
+    const [metadata, setMetadata] = useState({});
+    const [problemsData, setProblemsData] = useState([]);
 
     // load data on init
     useEffect(() => {
         const fetchPublicData = async () => {
-            const response = await API.getContestsData().then((response) => response.json());
-            if (response.status === "OK") {
-                setUpcomingContestsData(response.upcomingContests);
-                setPastContestsData(response.pastContests);
+            const contestsResponse = await API.getContestsData().then(response => response.json());
+            if (contestsResponse.status === "OK") {
+                setUpcomingContestsData(contestsResponse.upcomingContests);
+                setPastContestsData(contestsResponse.pastContests);
             }
-        };
+            
+            const metadataResponse = await API.getMetadata().then(response => response.json());
+            if (metadataResponse.status === "OK") {
+                setMetadata(metadataResponse.metadata);
+            }
 
+            const problemsResponse = await API.getProblemsData().then(response => response.json());
+            if (problemsResponse.status === "OK") {
+                problemsResponse.problems.sort((a, b) => b.contestId - a.contestId);
+                setProblemsData(problemsResponse.problems);
+            }    
+        };
         fetchPublicData();
     }, []);
 
@@ -70,11 +82,11 @@ function App() {
                             <HomePage userInfo={userInfo} upcomingContestsData={upcomingContestsData} pastContestsData={pastContestsData} />
                         }
                     />
-                    <Route path="problems" element={<ProblemsPage userInfo={userInfo} />} />
+                    <Route path="problems" element={<ProblemsPage userInfo={userInfo} problemsData={problemsData}/>} />
                     <Route path="resources" element={<ResourcesPage userInfo={userInfo} JWT={JWT} JWTSetter={setJWT} />} />
                     <Route
                         path="profile/:profileUsername"
-                        element={<ProfilePage userInfo={userInfo} userInfoSetter={setUserInfo} JWT={JWT} JWTSetter={setJWT} />}
+                        element={<ProfilePage userInfo={userInfo} userInfoSetter={setUserInfo} JWT={JWT} JWTSetter={setJWT} metadata={metadata}/>}
                     />
                     <Route path="auth/github/callback" element={<GitHubOAuthCallbackPage JWTSetter={setJWT} />} />
                 </Routes>

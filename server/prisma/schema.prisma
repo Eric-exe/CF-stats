@@ -47,6 +47,8 @@ model User {
     totalAC                     Int                     @default(0)
     tagsFrequency               Json                    @default("{}")
     tagsDifficulty              Json                    @default("{}")
+    ratingsFrequency            Json                    @default("{}")
+    ratingsAC                   Json                    @default("{}")
     assignedProblem             Problem?                @relation(fields: [assignedProblemId], references: [id])
     assignedProblemId           String?
     recentSubmissions           Int[]
