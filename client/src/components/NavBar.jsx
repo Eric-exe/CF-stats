@@ -29,7 +29,7 @@ function NavBar(props) {
         } else {
             setCurrentPage("/");
         }
-    }, []);
+    }, [window.location.href, props.userInfo.username]);
 
     const navigate = useNavigate();
 
