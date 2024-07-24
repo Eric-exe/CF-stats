@@ -64,7 +64,7 @@ function SuggestedProblem(props) {
                 <div className="d-flex align-items-center overflow-auto mt-3">
                     <div className="me-4">Current Problem:</div>
                     <div className="row align-items-center flex-grow-1 flex-nowrap">
-                        {props.userInfo.assignedProblemId !== null ? (
+                        {props.userInfo && props.userInfo.assignedProblem !== undefined && props.userInfo.assignedProblem !== null ? (
                             <>
                                 <div className="col-1 text-truncate">{props.userInfo.assignedProblem.contestId}</div>
                                 <div className="col-1 text-truncate">{props.userInfo.assignedProblem.index}</div>

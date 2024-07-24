@@ -4,6 +4,7 @@ import propTypes from "prop-types";
 
 NavBar.propTypes = {
     userInfo: propTypes.object.isRequired,
+    JWTSetter: propTypes.func.isRequired,
 };
 function NavBar(props) {
     const [currentPage, setCurrentPage] = useState("/");
@@ -18,11 +19,17 @@ function NavBar(props) {
             setCurrentPage("/resources");
         } else if (window.location.href.match("https?:\\/\\/[^\\s]+\\/profile\\/[a-zA-Z0-9-]+")) {
             // match with http(s)://.../profile/x
-            setCurrentPage("/profile");
+            const username = window.location.href.slice(window.location.href.lastIndexOf("/") + 1);
+            if (username === props.userInfo.username) {
+                setCurrentPage("/profile");
+            }
+            else {
+                setCurrentPage("");
+            }
         } else {
             setCurrentPage("/");
         }
-    }, []);
+    }, [window.location.href, props.userInfo.username]);
 
     const navigate = useNavigate();
 
@@ -33,9 +40,14 @@ function NavBar(props) {
 
     // handle github oauth login
     const handleLogin = () => {
-        window.location.href = `https://github.com/login/oauth/authorize?client_id=${import.meta.env.VITE_GITHUB_CLIENT_ID}&redirect_uri=${
-            import.meta.env.VITE_GITHUB_CALLBACK_URL
-        }`;
+        window.location.href = `https://github.com/login/oauth/authorize?client_id=${
+            import.meta.env.VITE_GITHUB_CLIENT_ID
+        }&prompt=select_account&redirect_uri=${import.meta.env.VITE_GITHUB_CALLBACK_URL}`;
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem("jwt");
+        props.JWTSetter("");
     };
 
     return (
@@ -77,7 +89,7 @@ function NavBar(props) {
                         </div>
                     </div>
 
-                    <div className="navbar-nav nav-item">
+                    <div className="navbar-nav nav-item d-flex align-items-lg-center">
                         <div
                             className={"nav-link " + (currentPage.substring(0, 8) === "/profile" ? "active" : "")}
                             onClick={() => {
@@ -95,6 +107,16 @@ function NavBar(props) {
                                 <>{props.userInfo.username}</>
                             )}
                         </div>
+                        {JSON.stringify(props.userInfo) === "{}" ? (
+                            <></>
+                        ) : (
+                            <>
+                                <div className="border-start h-100 d-none d-lg-block nav-link-color">&#8203;</div>
+                                <div className="nav-link" onClick={handleLogout}>
+                                    Logout
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

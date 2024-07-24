@@ -74,7 +74,7 @@ function App() {
     return (
         <>
             <Router>
-                <NavBar userInfo={userInfo} />
+                <NavBar userInfo={userInfo} JWTSetter={setJWT} />
                 <Routes>
                     <Route
                         index

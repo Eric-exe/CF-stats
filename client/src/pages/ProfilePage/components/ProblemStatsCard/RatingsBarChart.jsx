@@ -4,7 +4,7 @@ import propTypes from "prop-types";
 
 RatingsBarChart.propTypes = {
     attempted: propTypes.object.isRequired,
-    AC: propTypes.object.isRequired, 
+    AC: propTypes.object.isRequired,
 };
 
 const CF_MIN_RATING = 800;
@@ -18,7 +18,7 @@ function RatingsBarChart(props) {
         let newBarData = [];
         for (let rating = CF_MIN_RATING; rating <= CF_MAX_RATING; rating += 100) {
             const AC = props.AC[rating] || 0;
-            const failed = (props.attempted[rating] || 0) - AC; 
+            const failed = (props.attempted[rating] || 0) - AC;
             newBarData.push({ rating, AC, failed });
         }
         setBarData(newBarData);
@@ -29,25 +29,24 @@ function RatingsBarChart(props) {
             data: barData,
             series: [
                 {
-                  type: "bar",
-                  xKey: "rating",
-                  yKey: "AC",
-                  yName: "AC",
-                  stacked: true,
+                    type: "bar",
+                    xKey: "rating",
+                    yKey: "AC",
+                    yName: "AC",
+                    stacked: true,
                 },
                 {
                     type: "bar",
                     xKey: "rating",
                     yKey: "failed",
                     yName: "Failed",
-                    stacked: true
-                }
+                    stacked: true,
+                },
             ],
-
-        })
+        });
     }, [barData]);
 
-    return (<AgCharts options={barOptions} />);
+    return <AgCharts options={barOptions} />;
 }
 
 export default RatingsBarChart;

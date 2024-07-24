@@ -17,7 +17,6 @@ cfQueue.add("update contests", { fn: "UPDATE_CONTEST" }, { repeat: { cron: "0 0 
 const cfWorker = new Worker(
     "codeforces queue",
     async (job) => {
-        console.log(job.data);
         switch (job.data.fn) {
             case "UPDATE_PROBLEM":
                 updateProblemsData();
