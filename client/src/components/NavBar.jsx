@@ -19,7 +19,13 @@ function NavBar(props) {
             setCurrentPage("/resources");
         } else if (window.location.href.match("https?:\\/\\/[^\\s]+\\/profile\\/[a-zA-Z0-9-]+")) {
             // match with http(s)://.../profile/x
-            setCurrentPage("/profile");
+            const username = window.location.href.slice(window.location.href.lastIndexOf("/") + 1);
+            if (username === props.userInfo.username) {
+                setCurrentPage("/profile");
+            }
+            else {
+                setCurrentPage("");
+            }
         } else {
             setCurrentPage("/");
         }
@@ -34,9 +40,9 @@ function NavBar(props) {
 
     // handle github oauth login
     const handleLogin = () => {
-        window.location.href = `https://github.com/login/oauth/authorize?client_id=${import.meta.env.VITE_GITHUB_CLIENT_ID}&redirect_uri=${
-            import.meta.env.VITE_GITHUB_CALLBACK_URL
-        }`;
+        window.location.href = `https://github.com/login/oauth/authorize?client_id=${
+            import.meta.env.VITE_GITHUB_CLIENT_ID
+        }&prompt=select_account&redirect_uri=${import.meta.env.VITE_GITHUB_CALLBACK_URL}`;
     };
 
     const handleLogout = () => {
