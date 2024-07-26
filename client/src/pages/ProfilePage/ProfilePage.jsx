@@ -41,7 +41,7 @@ function ProfilePage(props) {
 
     // Use SSEs to always display the latest data in realtime.
     useEffect(() => {
-        let sse = new EventSource(`http://localhost:3000/user/sse/${profileUsername}`);
+        let sse = new EventSource(`${import.meta.env.VITE_BACKEND_URL}/user/sse/${profileUsername}`);
         sse.onmessage = (e) => {
             getUpdatedData(e);
         };
@@ -49,7 +49,7 @@ function ProfilePage(props) {
         sse.onerror = (e) => {
             console.error(e);
             sse.close();
-            sse = new EventSource(`http://localhost:3000/user/sse/${profileUsername}`);
+            sse = new EventSource(`${import.meta.env.VITE_BACKEND_URL}/user/sse/${profileUsername}`);
         };
 
         const getUpdatedData = async (e) => {
