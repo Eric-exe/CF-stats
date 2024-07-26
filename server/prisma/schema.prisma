@@ -30,9 +30,10 @@ model Problem {
     tags                        String[]
 
     // handles relationships, shouldn't be accessed from this field
-    assigned                    User[]
+    assigned                    User[]                  
     userProblems                UserProblemStatus[]
     submissions                 Submission[]
+    UsersUnsolved               User[]                  @relation("UserProblemsUnsolved")
 }
 
 model User {
@@ -53,6 +54,7 @@ model User {
     assignedProblemId           String?
     recentSubmissions           Int[]
     recentAC                    Int[]
+    unsolvedProblems            Problem[]               @relation("UserProblemsUnsolved")
     posts                       Post[]
     postsUpvoted                Post[]                  @relation("upvotedPosts")
     postsDownvoted              Post[]                  @relation("downvotedPosts")
