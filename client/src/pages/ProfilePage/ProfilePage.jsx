@@ -7,6 +7,7 @@ import SuggestedProblemCard from "./components/SuggestedProblemCard/SuggestedPro
 import ProblemStatsCard from "./components/ProblemStatsCard/ProblemStatsCard";
 import ActivityGraphStatsCard from "./components/ActivityGraphStatsCard/ActivityGraphStatsCard";
 import SubmissionsStatsCard from "./components/SubmissionsStatsCard";
+import RevisionsCard from "./components/RevisionsCard";
 
 ProfilePage.propTypes = {
     userInfo: propTypes.object.isRequired,
@@ -161,7 +162,7 @@ function ProfilePage(props) {
                                         <></>
                                     )}
 
-                                    <ProblemStatsCard profileInfo={profileInfo} metadata={props.metadata}/>
+                                    <ProblemStatsCard profileInfo={profileInfo} metadata={props.metadata} />
 
                                     <div className="m-4">
                                         <div className="row">
@@ -184,6 +185,7 @@ function ProfilePage(props) {
                                     </div>
 
                                     <SubmissionsStatsCard profileInfo={profileInfo} />
+                                    {pageMode === "owner" ? <RevisionsCard userInfo={props.userInfo} /> : <></>}
                                 </>
                             )}
                         </div>

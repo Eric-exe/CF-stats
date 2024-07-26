@@ -19,21 +19,24 @@ class Data {
     and then processes said data, writing results to database.
 
     Processes:
-    - UserProblemStatus (prisma model) for each problem:
+    - In UserProblemStatus (prisma model):
         - lastAttempted: the most recent submission time of problem
         - submissions: total submission count of a problem
         - AC: total AC count of a problem
-    - total problems ACed
-    - total submissions count
-    - total AC count (a problem can have multiple ACs)
-    - tagsFrequency: number of problems a user has attempted under a certain tag (Ex: { "dp": 24 })
-    - tagsDifficulty: sum of user rated difficulty under a certain tag. 
-    - ratingsFrequency: number of problems a user has attempted under a certain rating.
-    - ratingsAC: number of problems a user has solved under a certain rating.
-        (Users can rate difficulty of problems and the rating would be summed up and grouped via problem tag)
-    - past 60 day submissions: submissions activity over the last 60 days
-    - past 60 day AC: AC activity over the last 60 days
-    - time of last update
+    
+    - In User:
+        - total problems ACed
+        - total submissions count
+        - total AC count (a problem can have multiple ACs)
+        - tagsFrequency: number of problems a user has attempted under a certain tag (Ex: { "dp": 24 })
+        - tagsDifficulty: sum of user rated difficulty under a certain tag. 
+        - ratingsFrequency: number of problems a user has attempted under a certain rating.
+        - ratingsAC: number of problems a user has solved under a certain rating.
+        - problemsToRevise: an array of problems the user hasn't solved
+            (Users can rate difficulty of problems and the rating would be summed up and grouped via problem tag)
+        - past 60 day submissions: submissions activity over the last 60 days
+        - past 60 day AC: AC activity over the last 60 days
+        - time of last update
     */
     static async updateUserData(username) {
         await CodeforcesAPI.fetchUserData(username);
@@ -123,6 +126,20 @@ class Data {
                         where: { username_problemId: { username, problemId: problemStatus.problemId } },
                         data: { userDifficultyRating },
                     });
+
+                    // add to problemsToRevise if not ACed
+                    if (!ACed) {
+                        await prisma.User.update({
+                            where: { username },
+                            data: {
+                                unsolvedProblems: {
+                                    connect: {
+                                        id: problemStatus.problem.id
+                                    }
+                                }
+                            }
+                        });
+                    }
                 }
 
                 for (const tag of problemStatus.problem.tags) {
