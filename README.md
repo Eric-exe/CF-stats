@@ -31,6 +31,6 @@
 - [x] Add refresh button to profile, fetching latest data. Has to work with task schedulers as to not spam Codeforces API
 
 ### Week 9
-- [ ] Implement "couldn't solve", storing the questions the user has failed to solve in the past
+- [x] Implement "couldn't solve", storing the questions the user has failed to solve in the past
 - [ ] Implement the creation of a username, updating resources board with author name.
 - [x] Implement public profile pages, allowing for foreign users to see a user's public stats (total solved/submissions and their graphs)
