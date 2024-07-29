@@ -10,6 +10,9 @@ function RevisionsCard(props) {
     const [unsolvedProblemStatuses, setUnsolvedProblemStatuses] = useState([]);
 
     useEffect(() => {
+        if (props.userInfo.problemStatuses === null || props.userInfo.problemStatuses === undefined) {
+            return;
+        }
         setUnsolvedProblemStatuses(props.userInfo.problemStatuses.filter((status) => status.AC === 0));
     }, [props.userInfo]);
 
