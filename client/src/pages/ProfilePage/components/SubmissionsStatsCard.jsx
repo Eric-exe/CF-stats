@@ -20,7 +20,7 @@ function SubmissionsStatsCard(props) {
 
     const columnDefs = [
         { field: "submissionId", headerName: "Submission ID", sortable: true, filter: true, cellRenderer: SubmissionLinkRenderer },
-        { field: "name", headerName: "Problem Name", sortable: true, filter: true, cellRenderer: ProblemsLinkRenderer, flex: 1},
+        { field: "name", headerName: "Problem Name", sortable: true, filter: true, cellRenderer: ProblemsLinkRenderer, flex: 2 },
         { field: "verdict", headerName: "Status", sortable: true, filter: true },
         { field: "time", headerName: "Submission Time", sortable: false },
         { field: "programmingLang", headerName: "Programming Language", sortable: false },
