@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
-import UnsolvedGrid from "./UnsolvedGrid";
+import UnsolvedGrid from "./RevisionsGrid";
 import propTypes from "prop-types";
+import RevisionsGrid from "./RevisionsGrid";
 
 RevisionsCard.propTypes = {
     userInfo: propTypes.object.isRequired,
 };
 
 function RevisionsCard(props) {
-    const [unsolvedProblemStatuses, setUnsolvedProblemStatuses] = useState([]);
+    const [problemsToRevise, setProblemsToRevise] = useState([]);
 
     useEffect(() => {
         if (props.userInfo.problemStatuses === null || props.userInfo.problemStatuses === undefined) {
             return;
         }
-        setUnsolvedProblemStatuses(props.userInfo.problemStatuses.filter((status) => status.AC === 0));
+        setProblemsToRevise(props.userInfo.problemStatuses.filter((status) => status.AC === 0 || status.markedForRevision));
     }, [props.userInfo]);
 
     return (
@@ -23,10 +24,8 @@ function RevisionsCard(props) {
             </div>
             <div className="collapse show" id="revisions-body">
                 <div className="container-fluid">
-                    <div className="container-fluid mt-3">
-                        <UnsolvedGrid problemStatus={unsolvedProblemStatuses} />
-                        <hr />
-                        Problems that you marked as revise:
+                    <div className="card-body">
+                        <RevisionsGrid problemStatuses={problemsToRevise} />
                     </div>
                 </div>
             </div>

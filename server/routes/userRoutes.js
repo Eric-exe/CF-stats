@@ -19,7 +19,6 @@ const USER_INCLUDES = {
         include: { problem: true },
         orderBy: { timeCreated: "desc" },
     },
-    unsolvedProblems: true,
 };
 
 const KEYGEN_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";

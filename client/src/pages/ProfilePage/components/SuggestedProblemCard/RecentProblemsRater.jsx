@@ -49,15 +49,39 @@ function RecentProblemsRater(props) {
     const filterParams = {
         maxNumConditions: 25,
     };
-    
+
+    const ReviseButton = (params) => {
+        return (
+            <div className="d-flex h-100 justify-content-center align-items-center">
+                <button
+                    className="btn btn-sm btn-outline-dark"
+                    onClick={() => {
+                        console.log(params.data);
+                    }}
+                >
+                    Revise
+                </button>
+            </div>
+        );
+    };
+
     const columnDefs = [
-        { field: "contestId", headerName: "Contest ID", sortable: true, filter: true, filterParams },
-        { field: "index", headerName: "Index", sortable: true, filter: true, filterParams },
-        { field: "name", headerName: "Problem Name", sortable: true, filter: true, cellRenderer: ProblemLinkRenderer, flex: 1, filterParams },
-        { field: "rating", headerName: "Rating", sortable: true, filter: true, filterParams },
-        { field: "tags", headerName: "Tags", sortable: false, filter: true, cellRenderer: TagsRenderer, flex: 1, filterParams },
-        { field: "acAttempted", headerName: "AC/Attempted", sortable: false },
-        { field: "difficulty", headername: "Difficulty", sortable: false, cellRenderer: DifficultySliderRenderer },
+        { field: "contestId", headerName: "Contest ID", sortable: true, filter: true, filterParams, flex: 18 },
+        { field: "index", headerName: "Index", sortable: true, filter: true, filterParams, flex: 13 },
+        {
+            field: "name",
+            headerName: "Problem Name",
+            sortable: true,
+            filter: true,
+            cellRenderer: ProblemLinkRenderer,
+            flex: 50,
+            filterParams,
+        },
+        { field: "rating", headerName: "Rating", sortable: true, filter: true, filterParams, flex: 14 },
+        { field: "tags", headerName: "Tags", sortable: false, filter: true, cellRenderer: TagsRenderer, flex: 30, filterParams },
+        { field: "acAttempted", headerName: "AC/Attempted", sortable: false, flex: 18 },
+        { field: "difficulty", headername: "Difficulty", sortable: false, cellRenderer: DifficultySliderRenderer, flex: 25 },
+        { field: "markedToRevise", headerName: "", sortable: false, cellRenderer: ReviseButton, flex: 12 },
     ];
 
     useEffect(() => {
@@ -73,8 +97,27 @@ function RecentProblemsRater(props) {
             tags: status.problem.tags,
             acAttempted: `${status.AC}/${status.submissions} (${Math.round((status.AC / status.submissions) * 100 * 100) / 100}%)`,
             difficulty: status.userDifficultyRating,
+            markedToRevise: status.markedToRevise,
         }));
-        setRowData(rows);
+
+        // check for difference except difficulty, removes snapping of the grid
+        let different = false;
+
+        if (rows.length !== rowData.length) {
+            different = true;
+        } else {
+            const len = rows.length;
+            for (let i = 0; i < len; i++) {
+                const newRow = rows[i];
+                const oldRow = rowData[i];
+                if (newRow.problemId !== oldRow.problemId || newRow.rating !== oldRow.rating || newRow.acAttempted !== oldRow.acAttempted) {
+                    different = true;
+                }
+            }
+        }
+        if (different) {
+            setRowData(rows);
+        }
     }, [props.userInfo]);
 
     const handleRatingChange = (event, problemId) => {
@@ -87,7 +130,7 @@ function RecentProblemsRater(props) {
             } catch (error) {
                 console.error(error);
             }
-        }
+        };
         updateUserDifficultyRatingInDB(event, problemId);
 
         // update visually
@@ -98,7 +141,9 @@ function RecentProblemsRater(props) {
         if (rowNode) {
             const dataToUpdate = { ...rowNode.data, difficulty: event.target.value };
             const transaction = { update: [dataToUpdate] };
+            const columnState = gridApi.getColumnState();
             gridApi.applyTransaction(transaction);
+            gridApi.applyColumnState(columnState);
         }
     };
 

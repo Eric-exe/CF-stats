@@ -126,20 +126,6 @@ class Data {
                         where: { username_problemId: { username, problemId: problemStatus.problemId } },
                         data: { userDifficultyRating },
                     });
-
-                    // add to problemsToRevise if not ACed
-                    if (!ACed) {
-                        await prisma.User.update({
-                            where: { username },
-                            data: {
-                                unsolvedProblems: {
-                                    connect: {
-                                        id: problemStatus.problem.id
-                                    }
-                                }
-                            }
-                        });
-                    }
                 }
 
                 for (const tag of problemStatus.problem.tags) {
