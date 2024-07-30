@@ -442,6 +442,20 @@ class Data {
         }
         return problemsProbability;
     }
+
+    /*
+    Marks a problem for revision, updating it in DB.
+    */
+    static async markProblemForRevision(username, problemId) {
+        try {
+            await prisma.UserProblemStatus.update({
+                where: { username_problemId: { username, problemId } },
+                data: { markedForRevision: true }
+            });
+        } catch (error) {
+            return error;
+        }
+    }
 }
 
 module.exports = Data;

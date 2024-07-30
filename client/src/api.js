@@ -81,6 +81,10 @@ class API {
     static getMetadata() {
         return this.fetchRequest(import.meta.env.VITE_BACKEND_URL + "/problems/getMetadata", "GET", "", "");
     }
+
+    static markProblemForRevision(JWT, problemId) {
+        return this.fetchRequest(import.meta.env.VITE_BACKEND_URL + "/user/markProblemForRevision", "POST", JSON.stringify({ problemId }), JWT);
+    }
 }
 
 export default API;

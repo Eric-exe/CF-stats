@@ -236,6 +236,29 @@ router.post("/generateSuggestedProblem", authenticateJWT, async (req, res) => {
 });
 
 /*
+Sets a problem to be revised.
+
+REQUIRES the JWT in auth header.
+Sends an SSE of user update.
+
+Request body: 
+{ problemId: problem ID }
+
+Response body:
+{ status: "OK" }
+*/
+router.post("/markProblemForRevision", authenticateJWT, async (req, res) => {
+    try {
+        await Data.markProblemForRevision(req.user.username, req.body.problemId);
+        SSE.sendUsernameUpdate(req.user.username, { job: "UPDATE_USER", status: "OK" });
+        return res.status(200).json({ status: "OK" });
+    } catch (error) {
+        console.error(error);
+        return res.status(409).json({status: "FAILED" });
+    }
+});
+
+/*
 A continuous connection for the frontend to listen to. Anytime the frontend is displaying user data,
 it should be listening to this route for realtime user data updates.
 */

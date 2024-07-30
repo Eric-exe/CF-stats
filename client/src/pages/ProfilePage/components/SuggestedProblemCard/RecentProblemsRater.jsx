@@ -46,42 +46,44 @@ function RecentProblemsRater(props) {
         );
     };
 
-    const filterParams = {
-        maxNumConditions: 25,
-    };
-
     const ReviseButton = (params) => {
+        if (params.data.markedForRevision) {
+            return <>In Revisions</>;
+        }
         return (
             <div className="d-flex h-100 justify-content-center align-items-center">
-                <button
-                    className="btn btn-sm btn-outline-dark"
-                    onClick={() => {
-                        console.log(params.data);
-                    }}
-                >
+                <button className="btn btn-sm btn-outline-dark" onClick={() => markProblemForRevision(params.data.problemId)}>
                     Revise
                 </button>
             </div>
         );
     };
 
+    const filterParams = {
+        maxNumConditions: 25,
+    };
+
+    const remToPx = (rem) => {
+        const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        return rem * rootFontSize;
+    };
+
     const columnDefs = [
-        { field: "contestId", headerName: "Contest ID", sortable: true, filter: true, filterParams, flex: 18 },
-        { field: "index", headerName: "Index", sortable: true, filter: true, filterParams, flex: 13 },
+        { field: "contestId", headerName: "Contest ID", sortable: true, filter: true, filterParams },
+        { field: "index", headerName: "Index", sortable: true, filter: true, filterParams },
         {
             field: "name",
             headerName: "Problem Name",
             sortable: true,
             filter: true,
             cellRenderer: ProblemLinkRenderer,
-            flex: 50,
             filterParams,
         },
-        { field: "rating", headerName: "Rating", sortable: true, filter: true, filterParams, flex: 14 },
-        { field: "tags", headerName: "Tags", sortable: false, filter: true, cellRenderer: TagsRenderer, flex: 30, filterParams },
-        { field: "acAttempted", headerName: "AC/Attempted", sortable: false, flex: 18 },
-        { field: "difficulty", headername: "Difficulty", sortable: false, cellRenderer: DifficultySliderRenderer, flex: 25 },
-        { field: "markedToRevise", headerName: "", sortable: false, cellRenderer: ReviseButton, flex: 12 },
+        { field: "rating", headerName: "Rating", sortable: true, filter: true, filterParams },
+        { field: "tags", headerName: "Tags", sortable: false, filter: true, cellRenderer: TagsRenderer, filterParams },
+        { field: "acAttempted", headerName: "AC/Attempted", sortable: false },
+        { field: "difficulty", headerName: "Difficulty", sortable: false, cellRenderer: DifficultySliderRenderer },
+        { field: "revise", headerName: "", cellRenderer: ReviseButton, minWidth: remToPx(7), flex: 1 },
     ];
 
     useEffect(() => {
@@ -97,53 +99,49 @@ function RecentProblemsRater(props) {
             tags: status.problem.tags,
             acAttempted: `${status.AC}/${status.submissions} (${Math.round((status.AC / status.submissions) * 100 * 100) / 100}%)`,
             difficulty: status.userDifficultyRating,
-            markedToRevise: status.markedToRevise,
+            markedForRevision: status.markedForRevision,
         }));
-
-        // check for difference except difficulty, removes snapping of the grid
-        let different = false;
-
-        if (rows.length !== rowData.length) {
-            different = true;
-        } else {
-            const len = rows.length;
-            for (let i = 0; i < len; i++) {
-                const newRow = rows[i];
-                const oldRow = rowData[i];
-                if (newRow.problemId !== oldRow.problemId || newRow.rating !== oldRow.rating || newRow.acAttempted !== oldRow.acAttempted) {
-                    different = true;
-                }
-            }
-        }
-        if (different) {
-            setRowData(rows);
-        }
+        console.log(rows);
+        setRowData(rows);
     }, [props.userInfo]);
 
-    const handleRatingChange = (event, problemId) => {
-        const updateUserDifficultyRatingInDB = async () => {
-            try {
-                const data = await API.updateDifficultyRating(props.JWT, problemId, event.target.value).then((response) => response.json());
-                if (Object.prototype.hasOwnProperty.call(data, "JWT Error")) {
-                    props.JWTSetter("");
-                }
-            } catch (error) {
-                console.error(error);
+    const responseHandler = async (fn) => {
+        try {
+            const response = await fn().then(response => response.json());
+            if (Object.prototype.hasOwnProperty.call(response, "JWT Error")) {
+                props.JWTSetter("");
+                return false;
             }
-        };
-        updateUserDifficultyRatingInDB(event, problemId);
+            return response.status !== "FAILED";
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
-        // update visually
-        if (!gridApi) {
+    const handleRatingChange = async (event, problemId) => {
+        const updatedInBackend = responseHandler(() => API.updateDifficultyRating(props.JWT, problemId, event.target.value));
+        if (!updatedInBackend || !gridApi) {
             return;
         }
         const rowNode = gridApi.getRowNode(problemId);
         if (rowNode) {
             const dataToUpdate = { ...rowNode.data, difficulty: event.target.value };
             const transaction = { update: [dataToUpdate] };
-            const columnState = gridApi.getColumnState();
             gridApi.applyTransaction(transaction);
-            gridApi.applyColumnState(columnState);
+        }
+    };
+
+    const markProblemForRevision = async (problemId) => {
+        const updatedInBackend = responseHandler(() => API.markProblemForRevision(props.JWT, problemId));
+        if (!updatedInBackend || !gridApi) {
+            return;
+        }
+        const rowNode = gridApi.getRowNode(problemId);
+        if (rowNode) {
+            const dataToUpdate = { ...rowNode.data, markedForRevision: true };
+            const transaction = { update: [dataToUpdate] };
+            gridApi.applyTransaction(transaction);
+            gridApi.refreshCells({ rowNodes: [rowNode], columns: ["revise"], force: true });
         }
     };
 
