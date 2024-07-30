@@ -1,21 +1,29 @@
 import { useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
-import ProblemLinkRenderer from "../../../../components/ProblemLinkRenderer";
-import API from "../../../../api";
 import propTypes from "prop-types";
+import API from "../../../api";
+import ProblemLinkRenderer from "../../../components/ProblemLinkRenderer";
 
-RevisionsGrid.propTypes = {
-    problemStatuses: propTypes.array.isRequired,
+RevisionsCard.propTypes = {
+    userInfo: propTypes.object.isRequired,
     JWT: propTypes.string.isRequired,
     JWTSetter: propTypes.func.isRequired,
 };
 
-function RevisionsGrid(props) {
+function RevisionsCard(props) {
+    const [problemsToRevise, setProblemsToRevise] = useState([]);
     const [rowData, setRowData] = useState([]);
 
     useEffect(() => {
+        if (props.userInfo.problemStatuses === null || props.userInfo.problemStatuses === undefined) {
+            return;
+        }
+        setProblemsToRevise(props.userInfo.problemStatuses.filter((status) => status.AC === 0 || status.markedForRevision));
+    }, [props.userInfo]);
+
+    useEffect(() => {
         setRowData(
-            props.problemStatuses.map((problemStatus) => ({
+            problemsToRevise.map((problemStatus) => ({
                 problemId: problemStatus.problem.id,
                 contestId: problemStatus.problem.contestId,
                 index: problemStatus.problem.index,
@@ -25,7 +33,7 @@ function RevisionsGrid(props) {
                 AC: problemStatus.AC,
             }))
         );
-    }, [props.problemStatuses]);
+    }, [problemsToRevise]);
 
     const RevisedButtonRenderer = (params) => {
         return (
@@ -55,10 +63,21 @@ function RevisionsGrid(props) {
     ];
 
     return (
-        <div className="ag-theme-alpine" style={{ height: "35vh", width: "100%" }}>
-            <AgGridReact columnDefs={columnDefs} rowData={rowData} />
+        <div className="card shadow m-4">
+            <div className="card-header" data-bs-toggle="collapse" data-bs-target="#revisions-body" role="button">
+                <b>Revisions</b>
+            </div>
+            <div className="collapse show" id="revisions-body">
+                <div className="container-fluid">
+                    <div className="card-body">
+                        <div className="ag-theme-alpine" style={{ height: "35vh", width: "100%" }}>
+                            <AgGridReact columnDefs={columnDefs} rowData={rowData} />
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
 
-export default RevisionsGrid;
+export default RevisionsCard;

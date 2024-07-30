@@ -7,7 +7,7 @@ import SuggestedProblemCard from "./components/SuggestedProblemCard/SuggestedPro
 import ProblemStatsCard from "./components/ProblemStatsCard/ProblemStatsCard";
 import ActivityGraphStatsCard from "./components/ActivityGraphStatsCard/ActivityGraphStatsCard";
 import SubmissionsStatsCard from "./components/SubmissionsStatsCard";
-import RevisionsCard from "./components/RevisionsCard/RevisionsCard";
+import RevisionsCard from "./components/RevisionsCard";
 
 ProfilePage.propTypes = {
     userInfo: propTypes.object.isRequired,
