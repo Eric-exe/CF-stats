@@ -83,7 +83,7 @@ function RecentProblemsRater(props) {
         { field: "tags", headerName: "Tags", sortable: false, filter: true, cellRenderer: TagsRenderer, filterParams },
         { field: "acAttempted", headerName: "AC/Attempted", sortable: false },
         { field: "difficulty", headerName: "Difficulty", sortable: false, cellRenderer: DifficultySliderRenderer },
-        { field: "revise", headerName: "", cellRenderer: ReviseButtonRenderer, minWidth: remToPx(7), flex: 1 },
+        { field: "markedForRevision", headerName: "", cellRenderer: ReviseButtonRenderer, minWidth: remToPx(7), flex: 1 },
     ];
 
     useEffect(() => {
@@ -102,6 +102,7 @@ function RecentProblemsRater(props) {
             markedForRevision: status.markedForRevision,
         }));
         setRowData(rows);
+        console.log(rows[0].markedForRevision);
     }, [props.userInfo]);
 
     const responseHandler = async (fn) => {
@@ -123,7 +124,6 @@ function RecentProblemsRater(props) {
             const dataToUpdate = { ...rowNode.data, [key]: value };
             const transaction = { update: [dataToUpdate] };
             gridApi.applyTransaction(transaction);
-            gridApi.refreshCells({ rowNodes: [rowNode], columns: [key], force: true });
         }
     }
 
@@ -140,7 +140,7 @@ function RecentProblemsRater(props) {
         if (!updatedInBackend || !gridApi) {
             return;
         }
-        updateVisuals(problemId, "revise", true);
+        updateVisuals(problemId, "markedForRevision", true);
     };
 
     return (
