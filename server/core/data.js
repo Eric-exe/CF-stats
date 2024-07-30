@@ -446,11 +446,11 @@ class Data {
     /*
     Marks a problem for revision, updating it in DB.
     */
-    static async markProblemForRevision(username, problemId) {
+    static async markProblemForRevision(username, problemId, markToRevise) {
         try {
             await prisma.UserProblemStatus.update({
                 where: { username_problemId: { username, problemId } },
-                data: { markedForRevision: true }
+                data: { markedForRevision: markToRevise }
             });
         } catch (error) {
             return error;

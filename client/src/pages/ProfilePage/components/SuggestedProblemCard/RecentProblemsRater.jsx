@@ -136,7 +136,7 @@ function RecentProblemsRater(props) {
     };
 
     const markProblemForRevision = async (problemId) => {
-        const updatedInBackend = responseHandler(() => API.markProblemForRevision(props.JWT, problemId));
+        const updatedInBackend = responseHandler(() => API.markProblemForRevision(props.JWT, problemId, true));
         if (!updatedInBackend || !gridApi) {
             return;
         }

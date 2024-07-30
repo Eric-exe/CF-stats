@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import UnsolvedGrid from "./RevisionsGrid";
 import propTypes from "prop-types";
 import RevisionsGrid from "./RevisionsGrid";
 
 RevisionsCard.propTypes = {
     userInfo: propTypes.object.isRequired,
+    JWT: propTypes.string.isRequired,
+    JWTSetter: propTypes.func.isRequired,
 };
 
 function RevisionsCard(props) {
@@ -25,7 +26,7 @@ function RevisionsCard(props) {
             <div className="collapse show" id="revisions-body">
                 <div className="container-fluid">
                     <div className="card-body">
-                        <RevisionsGrid problemStatuses={problemsToRevise} />
+                        <RevisionsGrid problemStatuses={problemsToRevise} JWT={props.JWT} JWTSetter={props.JWTSetter} />
                     </div>
                 </div>
             </div>

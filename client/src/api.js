@@ -82,8 +82,8 @@ class API {
         return this.fetchRequest(import.meta.env.VITE_BACKEND_URL + "/problems/getMetadata", "GET", "", "");
     }
 
-    static markProblemForRevision(JWT, problemId) {
-        return this.fetchRequest(import.meta.env.VITE_BACKEND_URL + "/user/markProblemForRevision", "POST", JSON.stringify({ problemId }), JWT);
+    static markProblemForRevision(JWT, problemId, markToRevise) {
+        return this.fetchRequest(import.meta.env.VITE_BACKEND_URL + "/user/markProblemForRevision", "POST", JSON.stringify({ problemId, markToRevise }), JWT);
     }
 }
 

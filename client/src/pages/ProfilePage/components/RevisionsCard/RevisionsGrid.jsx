@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import ProblemLinkRenderer from "../../../../components/ProblemLinkRenderer";
+import API from "../../../../api";
 import propTypes from "prop-types";
 
 RevisionsGrid.propTypes = {
     problemStatuses: propTypes.array.isRequired,
+    JWT: propTypes.string.isRequired,
+    JWTSetter: propTypes.func.isRequired,
 };
 
 function RevisionsGrid(props) {
@@ -13,6 +16,7 @@ function RevisionsGrid(props) {
     useEffect(() => {
         setRowData(
             props.problemStatuses.map((problemStatus) => ({
+                problemId: problemStatus.problem.id,
                 contestId: problemStatus.problem.contestId,
                 index: problemStatus.problem.index,
                 name: problemStatus.problem.name,
@@ -24,16 +28,30 @@ function RevisionsGrid(props) {
     }, [props.problemStatuses]);
 
     const RevisedButtonRenderer = (params) => {
-        if (params.data.AC === 0) return "Problem not solved";
-        return (<>{JSON.stringify(params.data)}</>);
-    }
+        return (
+            <div className="d-flex justify-content-center align-items-center h-100">
+                {params.data.AC === 0 ? (
+                    "Problem not solved"
+                ) : (
+                    <button
+                        className="btn btn-sm btn-outline-dark"
+                        onClick={() => {
+                            API.markProblemForRevision(props.JWT, params.data.problemId, false);
+                        }}
+                    >
+                        Remove
+                    </button>
+                )}
+            </div>
+        );
+    };
 
     const columnDefs = [
         { field: "contestId", headerName: "Contest ID", sortable: true, filter: true },
         { field: "index", headerName: "Index", sortable: true, filter: true },
         { field: "name", headerName: "Problem Name", sortable: true, filter: true, cellRenderer: ProblemLinkRenderer, flex: 2 },
         { field: "lastAttempted", headerName: "Last Attempted", sortable: true, filter: true, flex: 1 },
-        { field: "markedToRevise", headerName: "Revised?", cellRenderer: RevisedButtonRenderer, flex: 1 },
+        { field: "markedToRevise", headerName: "", cellRenderer: RevisedButtonRenderer, flex: 1 },
     ];
 
     return (
