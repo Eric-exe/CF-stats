@@ -6,7 +6,7 @@ ProblemLinkRenderer.propTypes = {
 
 function ProblemLinkRenderer(params) {
     return (
-        <a href={`https://codeforces.com/contest/${params.data.contestId}/problem/${params.data.index}`}>
+        <a target="_blank" href={`https://codeforces.com/contest/${params.data.contestId}/problem/${params.data.index}`}>
             {params.data.name}
         </a>
     );

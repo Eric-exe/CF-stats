@@ -47,7 +47,7 @@ function RecentProblemsRater(props) {
     };
 
     const ReviseButtonRenderer = (params) => {
-        if (params.data.markedForRevision) {
+        if (params.data.markedForRevision || params.data.AC === 0) {
             return <>In Revisions</>;
         }
         return (
@@ -102,7 +102,6 @@ function RecentProblemsRater(props) {
             markedForRevision: status.markedForRevision,
         }));
         setRowData(rows);
-        console.log(rows[0].markedForRevision);
     }, [props.userInfo]);
 
     const responseHandler = async (fn) => {

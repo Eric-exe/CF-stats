@@ -55,7 +55,7 @@ function NavBar(props) {
             <div className="container-fluid">
                 <div className="navbar-brand">
                     <i className="bi bi-code-slash mx-2"></i>
-                    <b>CProgAggregator</b>
+                    <b>CF.stats</b>
                 </div>
 
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar">

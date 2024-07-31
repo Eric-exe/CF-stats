@@ -6,7 +6,7 @@ ContestLinkRenderer.propTypes = {
 
 function ContestLinkRenderer(params) {
     return (
-        <a href={`https://codeforces.com/contest/${params.data.id}`}>
+        <a href={`https://codeforces.com/contest/${params.data.id}`} target="_blank">
             {params.data.name}
         </a>
     );

@@ -71,6 +71,7 @@ function SuggestedProblem(props) {
                                 <div className="col-8 text-truncate">
                                     <a
                                         href={`https://codeforces.com/contest/${props.userInfo.assignedProblem.contestId}/problem/${props.userInfo.assignedProblem.index}`}
+                                        target="_blank"
                                     >
                                         {props.userInfo.assignedProblem.name}
                                     </a>

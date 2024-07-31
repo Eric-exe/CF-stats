@@ -12,7 +12,7 @@ function SubmissionsStatsCard(props) {
 
     const SubmissionLinkRenderer = (params) => {
         return (
-            <a href={`https://codeforces.com/contest/${params.data.contestId}/submission/${params.data.submissionId}`}>
+            <a href={`https://codeforces.com/contest/${params.data.contestId}/submission/${params.data.submissionId}`} target="_blank">
                 {params.data.submissionId}
             </a>
         )
