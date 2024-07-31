@@ -61,7 +61,7 @@ function SuggestedProblem(props) {
                     Note: By default, you will be suggested slightly harder problems than your current estimated rating.
                 </div>
                 <hr />
-                <div className="d-flex align-items-center overflow-auto mt-3">
+                <div className="container-fluid d-flex align-items-center overflow-auto mt-3">
                     <div className="me-4">Current Problem:</div>
                     <div className="row align-items-center flex-grow-1 flex-nowrap">
                         {props.userInfo && props.userInfo.assignedProblem !== undefined && props.userInfo.assignedProblem !== null ? (

@@ -33,7 +33,6 @@ model Problem {
     assigned                    User[]                  
     userProblems                UserProblemStatus[]
     submissions                 Submission[]
-    UsersUnsolved               User[]                  @relation("UserProblemsUnsolved")
 }
 
 model User {
@@ -54,7 +53,6 @@ model User {
     assignedProblemId           String?
     recentSubmissions           Int[]
     recentAC                    Int[]
-    unsolvedProblems            Problem[]               @relation("UserProblemsUnsolved")
     posts                       Post[]
     postsUpvoted                Post[]                  @relation("upvotedPosts")
     postsDownvoted              Post[]                  @relation("downvotedPosts")
@@ -86,6 +84,7 @@ model UserProblemStatus {
     AC                          Int                     @default(0)
     lastAttempted               DateTime                
     userDifficultyRating        Int                     @default(-1)
+    markedForRevision           Boolean                 @default(false)
 
     @@unique([username, problemId])
 }

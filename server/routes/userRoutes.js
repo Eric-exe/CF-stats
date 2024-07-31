@@ -19,7 +19,6 @@ const USER_INCLUDES = {
         include: { problem: true },
         orderBy: { timeCreated: "desc" },
     },
-    unsolvedProblems: true,
 };
 
 const KEYGEN_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
@@ -233,6 +232,29 @@ router.post("/generateSuggestedProblem", authenticateJWT, async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(409).json({ status: "FAILED" });
+    }
+});
+
+/*
+Sets a problem to be revised based on request
+
+REQUIRES the JWT in auth header.
+Sends an SSE of user update.
+
+Request body: 
+{ problemId: problem ID, markToRevise: bool }
+
+Response body:
+{ status: "OK" }
+*/
+router.post("/markProblemForRevision", authenticateJWT, async (req, res) => {
+    try {
+        await Data.markProblemForRevision(req.user.username, req.body.problemId, req.body.markToRevise);
+        SSE.sendUsernameUpdate(req.user.username, { job: "UPDATE_USER", status: "OK" });
+        return res.status(200).json({ status: "OK" });
+    } catch (error) {
+        console.error(error);
+        return res.status(409).json({status: "FAILED" });
     }
 });
 

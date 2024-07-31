@@ -185,7 +185,11 @@ function ProfilePage(props) {
                                     </div>
 
                                     <SubmissionsStatsCard profileInfo={profileInfo} />
-                                    {pageMode === "owner" ? <RevisionsCard userInfo={props.userInfo} /> : <></>}
+                                    {pageMode === "owner" ? (
+                                        <RevisionsCard userInfo={props.userInfo} JWT={props.JWT} JWTSetter={props.JWTSetter} />
+                                    ) : (
+                                        <></>
+                                    )}
                                 </>
                             )}
                         </div>

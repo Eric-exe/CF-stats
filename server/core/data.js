@@ -121,25 +121,11 @@ class Data {
                         }
                         submissionsBeforeAC++;
                     }
-                    userDifficultyRating = ACed ? Math.min(2 + submissionsBeforeAC, 5) : 5;
+                    userDifficultyRating = ACed ? Math.min(1 + submissionsBeforeAC, 5) : 5;
                     await prisma.UserProblemStatus.update({
                         where: { username_problemId: { username, problemId: problemStatus.problemId } },
                         data: { userDifficultyRating },
                     });
-
-                    // add to problemsToRevise if not ACed
-                    if (!ACed) {
-                        await prisma.User.update({
-                            where: { username },
-                            data: {
-                                unsolvedProblems: {
-                                    connect: {
-                                        id: problemStatus.problem.id
-                                    }
-                                }
-                            }
-                        });
-                    }
                 }
 
                 for (const tag of problemStatus.problem.tags) {
@@ -455,6 +441,20 @@ class Data {
             problemsProbability[tag] /= totalDifficulty;
         }
         return problemsProbability;
+    }
+
+    /*
+    Marks a problem for revision, updating it in DB.
+    */
+    static async markProblemForRevision(username, problemId, markToRevise) {
+        try {
+            await prisma.UserProblemStatus.update({
+                where: { username_problemId: { username, problemId } },
+                data: { markedForRevision: markToRevise }
+            });
+        } catch (error) {
+            return error;
+        }
     }
 }
 
