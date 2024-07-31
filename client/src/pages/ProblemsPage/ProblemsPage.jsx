@@ -3,6 +3,7 @@ import { AgGridReact } from "ag-grid-react";
 import ProblemLinkRenderer from "../../components/ProblemLinkRenderer";
 import TagsRenderer from "../../components/TagsRenderer";
 import propTypes from "prop-types";
+import RatingRenderer from "../../components/RatingRenderer";
 
 ProblemsPage.propTypes = {
     userInfo: propTypes.object.isRequired,
@@ -28,7 +29,7 @@ function ProblemsPage(props) {
             cellRenderer: ProblemLinkRenderer,
             filterParams,
         },
-        { field: "rating", headerName: "Rating", sortable: true, filter: true, filterParams: { maxNumConditions: 25 },  },
+        { field: "rating", headerName: "Rating", sortable: true, filter: true, filterParams: { maxNumConditions: 25 }, cellRenderer: RatingRenderer },
         { field: "tags", headerName: "Tags", sortable: false, filter: true, flex: 1, cellRenderer: TagsRenderer, filterParams },
     ];
 

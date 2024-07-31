@@ -5,6 +5,7 @@ import ProblemLinkRenderer from "../../../../components/ProblemLinkRenderer";
 import TagsRenderer from "../../../../components/TagsRenderer";
 import API from "../../../../api";
 import propTypes from "prop-types";
+import RatingRenderer from "../../../../components/RatingRenderer";
 
 RecentProblemsRater.propTypes = {
     userInfo: propTypes.object.isRequired,
@@ -79,7 +80,7 @@ function RecentProblemsRater(props) {
             cellRenderer: ProblemLinkRenderer,
             filterParams,
         },
-        { field: "rating", headerName: "Rating", sortable: true, filter: true, filterParams },
+        { field: "rating", headerName: "Rating", sortable: true, filter: true, filterParams, cellRenderer: RatingRenderer },
         { field: "tags", headerName: "Tags", sortable: false, filter: true, cellRenderer: TagsRenderer, filterParams },
         { field: "acAttempted", headerName: "AC/Attempted", sortable: false },
         { field: "difficulty", headerName: "Difficulty", sortable: false, cellRenderer: DifficultySliderRenderer },
