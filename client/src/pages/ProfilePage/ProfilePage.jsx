@@ -8,6 +8,7 @@ import ProblemStatsCard from "./components/ProblemStatsCard/ProblemStatsCard";
 import ActivityGraphStatsCard from "./components/ActivityGraphStatsCard/ActivityGraphStatsCard";
 import SubmissionsStatsCard from "./components/SubmissionsStatsCard";
 import RevisionsCard from "./components/RevisionsCard";
+import UnlinkCodeforcesAccount from "./components/UnlinkCodeforcesAccount";
 
 ProfilePage.propTypes = {
     userInfo: propTypes.object.isRequired,
@@ -91,16 +92,26 @@ function ProfilePage(props) {
                             {/* General user stat bar */}
                             <div className="card card-body shadow m-4 overflow-auto">
                                 <div className="row">
-                                    <div className="d-flex col-lg-3 my-auto flex-wrap">
+                                    <div className="d-flex col-xl-3 my-auto flex-wrap text-truncate">
                                         <b>Username:&nbsp;</b>
                                         {profileInfo.username}
                                     </div>
-                                    <div className="d-flex col-lg-3 my-auto flex-wrap">
+                                    <div className="d-flex col-xl-3 my-auto flex-wrap text-truncate">
                                         {/* Display username or link button if it doesn't exist and user is owner */}
                                         <b className="text-nowrap my-auto">Codeforces Handle:&nbsp;</b>
                                         {profileInfo.handle !== null ? (
-                                            <>{profileInfo.handle}</>
-                                        ) : pageMode == "owner" ? (
+                                            <div
+                                                className="d-flex justify-content-between align-items-center flex-grow-1 text-truncate"
+                                                id="profilePageUserHandle"
+                                            >
+                                                <div className="text-truncate">{profileInfo.handle}</div>
+                                                {pageMode === "owner" ? (
+                                                    <UnlinkCodeforcesAccount JWT={props.JWT} JWTSetter={props.JWTSetter} />
+                                                ) : (
+                                                    <></>
+                                                )}
+                                            </div>
+                                        ) : pageMode === "owner" ? (
                                             <LinkCodeforcesAccount
                                                 profileUsername={profileUsername}
                                                 JWT={props.JWT}
@@ -112,13 +123,13 @@ function ProfilePage(props) {
                                             <></>
                                         )}
                                     </div>
-                                    <div className="d-flex col-lg-3 flex-wrap my-auto">
+                                    <div className="d-flex col-xl-3 flex-wrap my-auto">
                                         <b className="text-nowrap">Estimated Rating:&nbsp;</b>
                                         {profileInfo.handle === null
                                             ? ""
                                             : String(profileInfo.estimatedRating) + " (" + String(profileInfo.rating) + ")"}
                                     </div>
-                                    <div className="d-flex col-lg-3 justify-content-between">
+                                    <div className="d-flex col-xl-3 justify-content-between">
                                         <div className="d-flex my-auto flex-wrap">
                                             <b className="text-nowrap">Last updated:&nbsp;</b>
                                             {profileInfo.handle !== null ? (

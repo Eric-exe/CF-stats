@@ -49,7 +49,7 @@ function RecentProblemsRater(props) {
 
     const ReviseButtonRenderer = (params) => {
         if (params.data.markedForRevision || params.data.AC === 0) {
-            return <>In Revisions</>;
+            return <div className="d-flex justify-content-center align-items-center">In Revisions</div>;
         }
         return (
             <div className="d-flex h-100 justify-content-center align-items-center">
@@ -107,7 +107,7 @@ function RecentProblemsRater(props) {
 
     const responseHandler = async (fn) => {
         try {
-            const response = await fn().then(response => response.json());
+            const response = await fn().then((response) => response.json());
             if (Object.prototype.hasOwnProperty.call(response, "JWT Error")) {
                 props.JWTSetter("");
                 return false;
@@ -125,7 +125,7 @@ function RecentProblemsRater(props) {
             const transaction = { update: [dataToUpdate] };
             gridApi.applyTransaction(transaction);
         }
-    }
+    };
 
     const handleRatingChange = async (event, problemId) => {
         const updatedInBackend = responseHandler(() => API.updateDifficultyRating(props.JWT, problemId, event.target.value));

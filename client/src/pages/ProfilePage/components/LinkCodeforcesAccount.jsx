@@ -35,13 +35,11 @@ function LinkCodeforcesAccount(props) {
         if (props.linkResponse) {
             setIsLinking(false);
             if (props.linkResponse.status === "OK") {
-                setStatus("Handle linked!");
-                setStatusIsGood(true);
-
                 const modalInstance = bootstrap.Modal.getInstance(document.getElementById("cfLinkModal"));
                 if (modalInstance) {
                     modalInstance.hide();
                 }
+                setStatus("");
                 setPotentialHandle("");
                 API.updateUserInfo(props.profileUsername);
             } else {

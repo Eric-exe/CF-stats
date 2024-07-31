@@ -47,3 +47,19 @@ a {
 .nav-link-color {
   border-color: rgb(255, 255, 255, 0.55) !important;
 }
+
+/* Hover for unlink */
+#profilePageUserHandle #profilePageHandleUnlink {
+  opacity: 0;
+  visibility: hidden;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity 0.5s, visibility 0s 0.5s, max-height 0.5s;
+}
+
+#profilePageUserHandle:hover #profilePageHandleUnlink {
+  opacity: 1;
+  visibility: visible;
+  max-height: 40px; 
+  transition: opacity 0.5s, visibility 0s, max-height 0.5s;
+}
