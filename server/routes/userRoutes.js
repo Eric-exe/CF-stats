@@ -157,6 +157,20 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
 });
 
 /*
+Helper function for sending SSE updates after job processing
+*/
+async function handleRequest(req, res, fn) {
+    try {
+        await fn();
+        SSE.sendUsernameUpdate(req.user.username, { job: "UPDATE_USER", status: "OK" });
+        return res.status(200).json({ status: "OK" });
+    } catch (error) {
+        console.error(error);
+        return res.status(409).json({ status: "FAILED" });
+    }
+}
+
+/*
 Creates a update user job, updating the latest user data from CF API. 
 No JWT verification is needed as CF data is public info.
 See core/jobs for job implementation.
@@ -179,13 +193,16 @@ router.post("/updateInfo", async (req, res) => {
             data: { isUpdating: true },
         });
         SSE.sendUsernameUpdate(req.body.username, { job: "UPDATE_USER", status: "OK" });
-
-        cfQueue.add("update user", { fn: "UPDATE_USER", username: req.body.username }, { priority: 2 });
-        return res.status(200).json({ status: "OK" });
     } catch (error) {
-        console.error("[Error updating info]: ", error);
+        console.error(error);
         return res.status(409).json({ status: "FAILED", error });
     }
+
+    handleRequest(
+        req,
+        res,
+        () => { cfQueue.add("update user", { fn: "UPDATE_USER", username: req.body.username }, { priority: 2 }) }
+    );
 });
 
 /*
@@ -198,14 +215,11 @@ Response:
 { status: "OK" }
 */
 router.post("/updateDifficultyRating", authenticateJWT, async (req, res) => {
-    try {
-        await Data.updateUserRatingDifficulty(req.user.username, req.body.problemId, req.body.newDifficultyRating);
-        SSE.sendUsernameUpdate(req.user.username, { job: "UPDATE_USER", status: "OK" });
-        return res.status(200).json({ status: "OK" });
-    } catch (error) {
-        console.error("[Error updating difficulty rating]: ", error);
-        return res.status(409).json({ status: "FAILED" });
-    }
+    handleRequest(
+        req,
+        res, 
+        async () => { await Data.updateUserRatingDifficulty(req.user.username, req.body.problemId, req.body.newDifficultyRating); }
+    );
 });
 
 /*
@@ -225,14 +239,11 @@ Response:
 { status: "OK" }
 */
 router.post("/generateSuggestedProblem", authenticateJWT, async (req, res) => {
-    try {
-        await Data.generateSuggestedProblem(req.user.username, req.body.ratingStart, req.body.ratingEnd, req.body.tags || []);
-        SSE.sendUsernameUpdate(req.user.username, { job: "UPDATE_USER", status: "OK" });
-        return res.status(200).json({ status: "OK" });
-    } catch (error) {
-        console.error(error);
-        return res.status(409).json({ status: "FAILED" });
-    }
+    handleRequest(
+        req,
+        res, 
+        async () => { await Data.generateSuggestedProblem(req.user.username, req.body.ratingStart, req.body.ratingEnd, req.body.tags || []); }
+    );
 });
 
 /*
@@ -248,14 +259,27 @@ Response body:
 { status: "OK" }
 */
 router.post("/markProblemForRevision", authenticateJWT, async (req, res) => {
-    try {
-        await Data.markProblemForRevision(req.user.username, req.body.problemId, req.body.markToRevise);
-        SSE.sendUsernameUpdate(req.user.username, { job: "UPDATE_USER", status: "OK" });
-        return res.status(200).json({ status: "OK" });
-    } catch (error) {
-        console.error(error);
-        return res.status(409).json({status: "FAILED" });
-    }
+    handleRequest(
+        req,
+        res, 
+        async () => { await Data.markProblemForRevision(req.user.username, req.body.problemId, req.body.markToRevise); }
+    );
+});
+
+/*
+Unlinks the CF handle linked to said account and deletes all data pertaining to said handle.
+
+REQUIRES the JWT in auth header.
+
+Response body: 
+{ status: "OK" }
+*/
+router.get("/unlink", authenticateJWT, async (req, res) => {   
+    handleRequest(
+        req,
+        res,
+        async () => { await Data.deleteData(req.user.username); }
+    );
 });
 
 /*
