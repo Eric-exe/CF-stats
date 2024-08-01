@@ -118,6 +118,7 @@ function ProfilePage(props) {
                                                 userInfoSetter={props.userInfoSetter}
                                                 profileInfoSetter={setProfileInfo}
                                                 linkResponse={linkResponse}
+                                                linkResponseSetter={setLinkResponse}
                                             />
                                         ) : (
                                             <></>

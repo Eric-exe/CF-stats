@@ -47,8 +47,8 @@ class Data {
                 where: { username },
                 data: {
                     submissions: 0,
-                    AC: 0
-                }
+                    AC: 0,
+                },
             });
 
             const submissions = await prisma.Submission.findMany({
@@ -145,7 +145,7 @@ class Data {
                 if (!ratingsAC[problemStatus.problem.rating]) {
                     ratingsAC[problemStatus.problem.rating] = 0;
                 }
-                
+
                 ratingsFrequency[problemStatus.problem.rating]++;
                 if (problemStatus.AC > 0) {
                     ratingsAC[problemStatus.problem.rating]++;
@@ -153,7 +153,7 @@ class Data {
             }
 
             // count the number of submissions and AC over the last 60 days
-            const past60DaySubmissions = Array(60).fill(0)
+            const past60DaySubmissions = Array(60).fill(0);
             const past60DayAC = Array(60).fill(0);
             const sortedSubmissions = await prisma.Submission.findMany({
                 where: {
@@ -450,7 +450,42 @@ class Data {
         try {
             await prisma.UserProblemStatus.update({
                 where: { username_problemId: { username, problemId } },
-                data: { markedForRevision: markToRevise }
+                data: { markedForRevision: markToRevise },
+            });
+        } catch (error) {
+            return error;
+        }
+    }
+
+    /*
+    Delete all CF data for user
+    */
+    static async deleteData(username) {
+        try {
+            await prisma.Submission.deleteMany({
+                where: { authorUsername: username } 
+            });
+            await prisma.UserProblemStatus.deleteMany({
+                where: { username }
+            });
+
+            await prisma.User.update({
+                where: { username },
+                data: {
+                    handle: null,
+                    rating: 0, 
+                    estimatedRating: 0,
+                    problemsAC: 0,
+                    totalSubmissions: 0,
+                    totalAC: 0, 
+                    tagsFrequency: {},
+                    tagsDifficulty: {}, 
+                    ratingsAC: {},
+                    assignedProblemId: null,
+                    recentSubmissions: [],
+                    recentAC: [],
+                    lastUpdated: new Date().toISOString() 
+                }
             });
         } catch (error) {
             return error;

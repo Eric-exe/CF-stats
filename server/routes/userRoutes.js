@@ -159,10 +159,10 @@ router.post("/linkCF", authenticateJWT, async (req, res) => {
 /*
 Helper function for sending SSE updates after job processing
 */
-async function handleRequest(req, res, fn) {
+async function handleRequest(username, req, res, fn) {
     try {
         await fn();
-        SSE.sendUsernameUpdate(req.user.username, { job: "UPDATE_USER", status: "OK" });
+        SSE.sendUsernameUpdate(username, { job: "UPDATE_USER", status: "OK" });
         return res.status(200).json({ status: "OK" });
     } catch (error) {
         console.error(error);
@@ -185,7 +185,6 @@ Response:
 
 */
 router.post("/updateInfo", async (req, res) => {
-    // requires CF, needs to be in a queue
     try {
         // inform user that data is updating
         await prisma.User.update({
@@ -198,11 +197,9 @@ router.post("/updateInfo", async (req, res) => {
         return res.status(409).json({ status: "FAILED", error });
     }
 
-    handleRequest(
-        req,
-        res,
-        () => { cfQueue.add("update user", { fn: "UPDATE_USER", username: req.body.username }, { priority: 2 }) }
-    );
+    handleRequest(req.body.username, req, res, () => {
+        cfQueue.add("update user", { fn: "UPDATE_USER", username: req.body.username }, { priority: 2 });
+    });
 });
 
 /*
@@ -215,11 +212,9 @@ Response:
 { status: "OK" }
 */
 router.post("/updateDifficultyRating", authenticateJWT, async (req, res) => {
-    handleRequest(
-        req,
-        res, 
-        async () => { await Data.updateUserRatingDifficulty(req.user.username, req.body.problemId, req.body.newDifficultyRating); }
-    );
+    handleRequest(req.user.username, req, res, async () => {
+        await Data.updateUserRatingDifficulty(req.user.username, req.body.problemId, req.body.newDifficultyRating);
+    });
 });
 
 /*
@@ -239,11 +234,9 @@ Response:
 { status: "OK" }
 */
 router.post("/generateSuggestedProblem", authenticateJWT, async (req, res) => {
-    handleRequest(
-        req,
-        res, 
-        async () => { await Data.generateSuggestedProblem(req.user.username, req.body.ratingStart, req.body.ratingEnd, req.body.tags || []); }
-    );
+    handleRequest(req.user.username, req, res, async () => {
+        await Data.generateSuggestedProblem(req.user.username, req.body.ratingStart, req.body.ratingEnd, req.body.tags || []);
+    });
 });
 
 /*
@@ -259,11 +252,9 @@ Response body:
 { status: "OK" }
 */
 router.post("/markProblemForRevision", authenticateJWT, async (req, res) => {
-    handleRequest(
-        req,
-        res, 
-        async () => { await Data.markProblemForRevision(req.user.username, req.body.problemId, req.body.markToRevise); }
-    );
+    handleRequest(req.user.username, req, res, async () => {
+        await Data.markProblemForRevision(req.user.username, req.body.problemId, req.body.markToRevise);
+    });
 });
 
 /*
@@ -274,12 +265,21 @@ REQUIRES the JWT in auth header.
 Response body: 
 { status: "OK" }
 */
-router.get("/unlink", authenticateJWT, async (req, res) => {   
-    handleRequest(
-        req,
-        res,
-        async () => { await Data.deleteData(req.user.username); }
-    );
+router.get("/unlink", authenticateJWT, async (req, res) => {
+    // delete recurring job
+    const userData = await prisma.User.findUnique({
+        where: { username: req.user.username },
+    });
+
+    try {
+        cfQueue.removeRepeatableByKey(`update-user-${userData.handle}`);
+    } catch (error) {
+        console.error(error);
+    }
+
+    handleRequest(req.user.username, req, res, async () => {
+        await Data.deleteData(req.user.username);
+    });
 });
 
 /*

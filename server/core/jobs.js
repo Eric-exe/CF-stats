@@ -10,7 +10,6 @@ const cfQueue = new Queue("codeforces queue", {
     connection: redisConnection,
 });
 
-// update data at 12 AM
 cfQueue.add("update problems", { fn: "UPDATE_PROBLEM" }, { repeat: { cron: "0 0 * * *" }, priority: 1 });
 cfQueue.add("update contests", { fn: "UPDATE_CONTEST" }, { repeat: { cron: "0 0 * * *" }, priority: 1 });
 
@@ -123,7 +122,7 @@ const linkCF = async (username, handle) => {
     });
 
     // create a new job to make sure user data is fresh
-    cfQueue.add("update user", { fn: "UPDATE_USER", username }, { repeat: { cron: "0 0 * * *" }, priority: 1 });
+    cfQueue.add("update user", { fn: "UPDATE_USER", username }, { repeat: { cron: "0 0 * * *" }, priority: 1, jobId: `update-user-${handle}`});
 
     SSE.sendUsernameUpdate(username, {
         job: "LINK_USER",

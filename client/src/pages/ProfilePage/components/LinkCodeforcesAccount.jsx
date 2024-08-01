@@ -6,6 +6,7 @@ LinkCodeforcesAccount.propTypes = {
     profileUsername: propTypes.string.isRequired,
     JWT: propTypes.string.isRequired,
     linkResponse: propTypes.object.isRequired,
+    linkResponseSetter: propTypes.func.isRequired, 
 };
 
 function LinkCodeforcesAccount(props) {
@@ -48,6 +49,14 @@ function LinkCodeforcesAccount(props) {
             }
         }
     }, [props.linkResponse]);
+
+
+    // handle unmount
+    useEffect(() => {
+        return () => {
+            props.linkResponseSetter({});
+        };
+    }, []);
 
     return (
         <>

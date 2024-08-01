@@ -85,6 +85,10 @@ class API {
     static markProblemForRevision(JWT, problemId, markToRevise) {
         return this.fetchRequest(import.meta.env.VITE_BACKEND_URL + "/user/markProblemForRevision", "POST", JSON.stringify({ problemId, markToRevise }), JWT);
     }
+
+    static unlinkHandle(JWT) {
+        return this.fetchRequest(import.meta.env.VITE_BACKEND_URL + "/user/unlink", "GET", "", JWT); 
+    }
 }
 
 export default API;
