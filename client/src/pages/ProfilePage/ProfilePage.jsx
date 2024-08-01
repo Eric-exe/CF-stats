@@ -81,6 +81,42 @@ function ProfilePage(props) {
         API.updateUserInfo(profileUsername);
     };
 
+    const renderUnlinkButton = () => {
+        if (pageMode === "owner") {
+            return <UnlinkCodeforcesAccount JWT={props.JWT} JWTSetter={props.JWTSetter} />;
+        }
+        return null;
+    };
+
+    // Function to render the handle or the link/unlink button based on the user's state
+    const renderUserHandleOrLink = () => {
+        const { handle } = profileInfo;
+        // If the user has a handle, show it with unlink button if user is owner
+        if (handle) {
+            return (
+                <div className="d-flex justify-content-between align-items-center flex-grow-1 text-truncate" id="profilePageUserHandle">
+                    <div className="text-truncate">{handle}</div>
+                    {renderUnlinkButton()}
+                </div>
+            );
+        }
+
+        // If no handle and the user is the owner, show the link account component
+        if (pageMode === "owner") {
+            return (
+                <LinkCodeforcesAccount
+                    profileUsername={profileUsername}
+                    JWT={props.JWT}
+                    userInfoSetter={props.userInfoSetter}
+                    profileInfoSetter={setProfileInfo}
+                    linkResponse={linkResponse}
+                    linkResponseSetter={setLinkResponse}
+                />
+            );
+        }
+        return null;
+    };
+
     return (
         <>
             {profileInfo === null ? (
@@ -97,32 +133,8 @@ function ProfilePage(props) {
                                         {profileInfo.username}
                                     </div>
                                     <div className="d-flex col-xl-3 my-auto flex-wrap text-truncate">
-                                        {/* Display username or link button if it doesn't exist and user is owner */}
                                         <b className="text-nowrap my-auto">Codeforces Handle:&nbsp;</b>
-                                        {profileInfo.handle !== null ? (
-                                            <div
-                                                className="d-flex justify-content-between align-items-center flex-grow-1 text-truncate"
-                                                id="profilePageUserHandle"
-                                            >
-                                                <div className="text-truncate">{profileInfo.handle}</div>
-                                                {pageMode === "owner" ? (
-                                                    <UnlinkCodeforcesAccount JWT={props.JWT} JWTSetter={props.JWTSetter} />
-                                                ) : (
-                                                    <></>
-                                                )}
-                                            </div>
-                                        ) : pageMode === "owner" ? (
-                                            <LinkCodeforcesAccount
-                                                profileUsername={profileUsername}
-                                                JWT={props.JWT}
-                                                userInfoSetter={props.userInfoSetter}
-                                                profileInfoSetter={setProfileInfo}
-                                                linkResponse={linkResponse}
-                                                linkResponseSetter={setLinkResponse}
-                                            />
-                                        ) : (
-                                            <></>
-                                        )}
+                                        {renderUserHandleOrLink()}
                                     </div>
                                     <div className="d-flex col-xl-3 flex-wrap my-auto">
                                         <b className="text-nowrap">Estimated Rating:&nbsp;</b>
