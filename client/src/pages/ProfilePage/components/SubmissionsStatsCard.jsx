@@ -24,7 +24,7 @@ function SubmissionsStatsCard(props) {
         { field: "verdict", headerName: "Status", sortable: true, filter: true },
         { field: "time", headerName: "Submission Time", sortable: false },
         { field: "programmingLang", headerName: "Programming Language", sortable: false },
-        { field: "timeUsed", headername: "Time (ms)", sortable: false },
+        { field: "timeUsed", headerName: "Time (ms)", sortable: false },
         { field: "memoryUsed", headerName: "Memory (kb)", sortable: false },
     ];
 

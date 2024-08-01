@@ -6,6 +6,7 @@ LinkCodeforcesAccount.propTypes = {
     profileUsername: propTypes.string.isRequired,
     JWT: propTypes.string.isRequired,
     linkResponse: propTypes.object.isRequired,
+    linkResponseSetter: propTypes.func.isRequired, 
 };
 
 function LinkCodeforcesAccount(props) {
@@ -35,13 +36,11 @@ function LinkCodeforcesAccount(props) {
         if (props.linkResponse) {
             setIsLinking(false);
             if (props.linkResponse.status === "OK") {
-                setStatus("Handle linked!");
-                setStatusIsGood(true);
-
                 const modalInstance = bootstrap.Modal.getInstance(document.getElementById("cfLinkModal"));
                 if (modalInstance) {
                     modalInstance.hide();
                 }
+                setStatus("");
                 setPotentialHandle("");
                 API.updateUserInfo(props.profileUsername);
             } else {
@@ -50,6 +49,14 @@ function LinkCodeforcesAccount(props) {
             }
         }
     }, [props.linkResponse]);
+
+
+    // handle unmount
+    useEffect(() => {
+        return () => {
+            props.linkResponseSetter({});
+        };
+    }, []);
 
     return (
         <>
