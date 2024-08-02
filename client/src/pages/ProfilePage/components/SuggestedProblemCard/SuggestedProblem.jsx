@@ -32,7 +32,7 @@ function SuggestedProblem(props) {
             <div className="card-body">
                 <div className="row">
                     <div className="col-6">
-                        <div className="d-flex align-items-baseline">
+                        <div className="d-flex align-items-center">
                             <div className="text-nowrap">Rating:&nbsp;</div>
                             <div>
                                 <input

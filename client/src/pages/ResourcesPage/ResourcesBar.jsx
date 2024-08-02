@@ -69,7 +69,7 @@ function ResourcesBar(props) {
         <>
             <div className="card card-body m-4 shadow">
                 <div className="row">
-                    <div className="col-lg-4 d-flex align-items-baseline">
+                    <div className="col-lg-4 d-flex align-items-center">
                         <div className="text-nowrap">Search Post Name:&nbsp;</div>
                         <div className="d-flex flex-grow-1">
                             <input
