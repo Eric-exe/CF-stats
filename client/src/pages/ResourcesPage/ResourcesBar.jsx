@@ -54,12 +54,10 @@ function ResourcesBar(props) {
     }, [title, tags, sortBy]);
 
     const getPersonalPosts = async () => {
-        const fn = inPersonal ? 
-            () => API.getPosts(title, tags, sortBy) :
-            () => API.getPersonalPosts(props.JWT);
-                        
+        const fn = inPersonal ? () => API.getPosts(title, tags, sortBy) : () => API.getPersonalPosts(props.JWT);
+
         setInPersonal((oldInPersonal) => !oldInPersonal);
-        const response = await fn().then(response => response.json());
+        const response = await fn().then((response) => response.json());
         if (response.status === "OK") {
             props.postsSetter(response.posts);
         }
@@ -69,16 +67,20 @@ function ResourcesBar(props) {
         <>
             <div className="card card-body m-4 shadow">
                 <div className="row">
-                    <div className="col-lg-4 d-flex align-items-center">
-                        <div className="text-nowrap">Search Post Name:&nbsp;</div>
-                        <div className="d-flex flex-grow-1">
-                            <input
-                                type="text"
-                                className="form-control flex-grow-1"
-                                id="post-name-search"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                            />
+                    <div className="col-lg-4">
+                        <div>
+                            <div className="d-flex align-items-center">
+                                <div className="text-nowrap">Search Post Name:&nbsp;</div>
+                                <div className="d-flex flex-grow-1">
+                                    <input
+                                        type="text"
+                                        className="form-control flex-grow-1"
+                                        id="post-name-search"
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div className="col-lg-4">

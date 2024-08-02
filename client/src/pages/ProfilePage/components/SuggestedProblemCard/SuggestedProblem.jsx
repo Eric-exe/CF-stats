@@ -32,24 +32,26 @@ function SuggestedProblem(props) {
             <div className="card-body">
                 <div className="row">
                     <div className="col-6">
-                        <div className="d-flex align-items-center">
-                            <div className="text-nowrap">Rating:&nbsp;</div>
-                            <div>
-                                <input
-                                    className="form-control"
-                                    type="number"
-                                    value={ratingStart}
-                                    onChange={(event) => setRatingStart(event.target.value)}
-                                />
-                            </div>
-                            <div className="text-nowrap">&nbsp;-&nbsp;</div>
-                            <div>
-                                <input
-                                    className="form-control"
-                                    type="number"
-                                    value={ratingEnd}
-                                    onChange={(event) => setRatingEnd(event.target.value)}
-                                />
+                        <div>
+                            <div className="d-flex align-items-center">
+                                <div className="text-nowrap">Rating:&nbsp;</div>
+                                <div>
+                                    <input
+                                        className="form-control"
+                                        type="number"
+                                        value={ratingStart}
+                                        onChange={(event) => setRatingStart(event.target.value)}
+                                    />
+                                </div>
+                                <div className="text-nowrap">&nbsp;-&nbsp;</div>
+                                <div>
+                                    <input
+                                        className="form-control"
+                                        type="number"
+                                        value={ratingEnd}
+                                        onChange={(event) => setRatingEnd(event.target.value)}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
